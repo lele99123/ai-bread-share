@@ -32,6 +32,8 @@ interface EditableBranch {
   notes: string;
   final_recipe: string;
   sort_order: number;
+  chat_line_start: number | null;
+  chat_line_end: number | null;
   photo: File | null;
   photoPreview: string | null;
 }
@@ -90,6 +92,8 @@ export default function SubmitPage() {
             notes: b.notes || "",
             final_recipe: b.final_recipe || "",
             sort_order: b.sort_order,
+            chat_line_start: (b as any).chat_line_start ?? null,
+            chat_line_end: (b as any).chat_line_end ?? null,
             photo: null,
             photoPreview: null,
           })),
@@ -177,6 +181,8 @@ export default function SubmitPage() {
             outcome_photo_url: photo_url,
             tags: recipe.tags,
             sort_order: branch.sort_order,
+            chat_line_start: branch.chat_line_start ?? null,
+            chat_line_end: branch.chat_line_end ?? null,
           });
         }
       }

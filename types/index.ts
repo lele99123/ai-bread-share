@@ -28,6 +28,8 @@ export interface RecipeBranch {
   description: string | null;
   tags: string[];
   sort_order: number;
+  chat_line_start: number | null;
+  chat_line_end: number | null;
   created_at: string;
   avg_rating?: number;
   review_count?: number;

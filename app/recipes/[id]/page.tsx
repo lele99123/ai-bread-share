@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/supabase";
@@ -181,6 +181,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   const [branches, setBranches] = useState<RecipeBranch[]>([]);
   const [activeBranchIdx, setActiveBranchIdx] = useState(0);
   const [loading, setLoading] = useState(true);
+  const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { params.then((p) => setId(p.id)); }, [params]);
 
@@ -200,6 +201,17 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
       setLoading(false);
     });
   }, [id]);
+
+  function scrollToChatLine(lineStart: number | null) {
+    if (!chatRef.current || lineStart === null) return;
+    const lines = chatRef.current.querySelectorAll("[data-line]");
+    const target = lines[lineStart] as HTMLElement;
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.style.background = "var(--accent-light)";
+      setTimeout(() => { target.style.background = ""; }, 2000);
+    }
+  }
 
   if (loading) {
     return (
@@ -287,6 +299,18 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                     <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
                       ★ {activeBranch.avg_rating.toFixed(1)} ({activeBranch.review_count})
                     </span>
+                  )}
+                  {activeBranch.chat_line_start !== null && (
+                    <button
+                      onClick={() => scrollToChatLine(activeBranch.chat_line_start)}
+                      style={{
+                        background: "none", border: "none", cursor: "pointer",
+                        fontSize: "0.75rem", color: "var(--accent)", textDecoration: "underline",
+                        padding: 0, marginLeft: "4px",
+                      }}
+                    >
+                      View in chat
+                    </button>
                   )}
                 </div>
 
@@ -400,7 +424,11 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
             padding: "24px 28px",
           }}>
             <div className="prose-bread" style={{ fontSize: "0.875rem" }}>
-              <ReactMarkdown>{recipe.chat_history}</ReactMarkdown>
+              <div ref={chatRef}>
+                {recipe.chat_history.split("\n").map((line, i) => (
+                  <span key={i} data-line={i}>{line}</span>
+                ))}
+              </div>
             </div>
           </div>
         </div>

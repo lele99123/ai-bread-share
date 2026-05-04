@@ -14,6 +14,8 @@ const EXTRACTION_PROMPT = `You are a baker and AI recipe analyst. Given a chat h
 
 Group iterations of the SAME recipe together. The first/primary iteration gets sort_order=0, the second gets sort_order=1, etc.
 
+Also track where in the chat each recipe FIRST appears. Use line numbers (counting from 0, each newline is a line) to mark chat_line_start. This lets us jump back to the exact chat section.
+
 Return a JSON object (NOT an array) with "recipes" key:
 {
   "recipes": [
@@ -23,17 +25,22 @@ Return a JSON object (NOT an array) with "recipes" key:
       "bread_type": "Sweet",
       "description": "A brief 1-2 sentence description of this bread...",
       "tags": ["banana", "sweet", "milk", "soft-crumb"],
+      "chat_line_start": 0,
       "branches": [
         {
           "title": "Milk Toast — 1.5lb (Original)",
           "notes": "Base recipe before any modifications",
           "final_recipe": "### Ingredients\\n- ...\\n### Steps\\n...",
+          "chat_line_start": 0,
+          "chat_line_end": 45,
           "sort_order": 0
         },
         {
           "title": "Milk Toast — 2lb with Banana",
           "notes": "Added 120g banana, reduced water by 40g to compensate",
           "final_recipe": "### Ingredients\\n- ...\\n### Steps\\n...",
+          "chat_line_start": 46,
+          "chat_line_end": 92,
           "sort_order": 1
         }
       ]
@@ -44,11 +51,14 @@ Return a JSON object (NOT an array) with "recipes" key:
       "bread_type": "Savory",
       "description": "A rustic Italian-style bread with garlic, rosemary, and olive oil...",
       "tags": ["garlic", "rosemary", "savory", "crusty"],
+      "chat_line_start": 120,
       "branches": [
         {
           "title": "Italian Garlic Bread — 1lb",
           "notes": "First attempt with fresh rosemary",
           "final_recipe": "...",
+          "chat_line_start": 120,
+          "chat_line_end": 165,
           "sort_order": 0
         }
       ]
@@ -58,6 +68,8 @@ Return a JSON object (NOT an array) with "recipes" key:
 
 Rules:
 - Each entry in "recipes" = one DISTINCT bread type (e.g. "Milk Toast" or "Italian Garlic Bread")
+- Track FIRST occurrence: chat_line_start = line number where this recipe first appears in the chat (0-indexed)
+- For branches: chat_line_start/chat_line_end = the specific line range where THIS branch iteration appears
 - Each bread type can have 1+ branches representing iterations of that SAME recipe
 - ai_model: detect once per recipe group, apply to all branches in that group
 - bread_type: set per recipe
@@ -127,6 +139,8 @@ export async function POST(req: NextRequest) {
         title: b.title && typeof b.title === "string" ? b.title : `Iteration ${i + 1}`,
         notes: b.notes && typeof b.notes === "string" ? b.notes : null,
         final_recipe: b.final_recipe && typeof b.final_recipe === "string" ? b.final_recipe : null,
+        chat_line_start: typeof b.chat_line_start === "number" ? b.chat_line_start : null,
+        chat_line_end: typeof b.chat_line_end === "number" ? b.chat_line_end : null,
         sort_order: typeof b.sort_order === "number" ? b.sort_order : i,
       })),
     }));
