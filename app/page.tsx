@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Recipe } from "@/types";
+import { useLanguage } from "@/lib/language";
 
 const AI_MODELS = ["All", "Gemini", "ChatGPT", "Claude", "DeepSeek", "Other"];
 const BREAD_TYPES = ["All", "Sweet", "Savory", "Sourdough", "Other"];
@@ -28,6 +29,7 @@ function Stars({ rating }: { rating: number }) {
 }
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
+  const { t } = useLanguage();
   const modelClass = getModelClass(recipe.ai_model);
   const primaryBranch = recipe.branches?.[0];
   const branchCount = recipe.branches?.length || 0;
@@ -69,7 +71,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               fontSize: '0.7rem', padding: '0.2rem 0.5rem', borderRadius: '9999px',
               fontWeight: 600,
             }}>
-              {branchCount} variants
+              {branchCount} {t("home.variants")}
             </span>
           )}
         </div>
@@ -102,7 +104,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               </span>
             </>
           ) : (
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>No reviews yet</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>{t("home.noReviews")}</span>
           )}
         </div>
       </div>
@@ -111,6 +113,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 }
 
 export default function Home() {
+  const { t } = useLanguage();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedModel, setSelectedModel] = useState("All");
@@ -155,14 +158,13 @@ export default function Home() {
 
       {/* ── Header ── */}
       <div style={{ marginBottom: '48px', maxWidth: '600px' }}>
-        <p className="section-label" style={{ marginBottom: '12px' }}>Community Recipes</p>
+        <p className="section-label" style={{ marginBottom: '12px' }}>{t("home.label")}</p>
         <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, marginBottom: '16px', letterSpacing: '-0.02em' }}>
-          Bread recipes born<br />
-          <em style={{ color: 'var(--accent)' }}>from a conversation.</em>
+          {t("home.title")}<br />
+          <em style={{ color: 'var(--accent)' }}>{t("home.titleAccent")}</em>
         </h1>
         <p style={{ fontSize: '1.0625rem', color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: '480px' }}>
-          Every recipe here starts with an AI chat. See what worked, what failed,
-          and how real bakers adapted the conversation to their own kitchen.
+          {t("home.description")}
         </p>
       </div>
 
@@ -173,7 +175,7 @@ export default function Home() {
         borderBottom: '1px solid var(--border)',
       }}>
         <div>
-          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>AI Model</p>
+          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>{t("home.filterModel")}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {AI_MODELS.map((m) => (
               <button
@@ -199,12 +201,12 @@ export default function Home() {
           </div>
         </div>
         <div>
-          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Type</p>
+          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>{t("home.filterType")}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {BREAD_TYPES.map((t) => (
+            {BREAD_TYPES.map((t_) => (
               <button
-                key={t}
-                onClick={() => setSelectedType(t)}
+                key={t_}
+                onClick={() => setSelectedType(t_)}
                 style={{
                   padding: '6px 14px',
                   borderRadius: '6px',
@@ -214,12 +216,12 @@ export default function Home() {
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                   border: '1px solid',
-                  ...(selectedType === t
+                  ...(selectedType === t_
                     ? { background: 'var(--text)', color: 'white', borderColor: 'var(--text)' }
                     : { background: 'transparent', color: 'var(--text-muted)', borderColor: 'var(--border)' }),
                 }}
               >
-                {t}
+                {t_}
               </button>
             ))}
           </div>
@@ -249,10 +251,10 @@ export default function Home() {
               <ellipse cx="32" cy="27" rx="16" ry="8" fill="var(--text)"/>
             </svg>
           </div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', marginBottom: '8px' }}>No recipes yet</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '28px' }}>Be the first to share an AI bread conversation.</p>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', marginBottom: '8px' }}>{t("home.noRecipes")}</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '28px' }}>{t("home.firstToShare")}</p>
           <Link href="/submit" className="btn-primary" style={{ display: 'inline-flex' }}>
-            Share a Recipe
+            {t("home.shareBtn")}
           </Link>
         </div>
       ) : (

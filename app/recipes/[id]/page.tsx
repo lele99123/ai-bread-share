@@ -5,6 +5,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/supabase";
 import { Recipe, RecipeBranch, Review } from "@/types";
+import { useLanguage } from "@/lib/language";
 
 function getModelClass(model: string): string {
   const m = model.toLowerCase();
@@ -166,6 +167,7 @@ function ReviewSection({ branchId }: { branchId: string }) {
 }
 
 export default function RecipePage({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useLanguage();
   const [id, setId] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [branches, setBranches] = useState<RecipeBranch[]>([]);
@@ -206,8 +208,8 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   if (!recipe) {
     return (
       <div className="container" style={{ paddingTop: "48px", paddingBottom: "80px", textAlign: "center" }}>
-        <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "2rem", marginBottom: "16px" }}>Recipe not found</h1>
-        <Link href="/" className="btn-primary">Back to home</Link>
+        <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "2rem", marginBottom: "16px" }}>{t("recipe.notFound")}</h1>
+        <Link href="/" className="btn-primary">{t("recipe.backHome")}</Link>
       </div>
     );
   }
@@ -225,12 +227,12 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
           textDecoration: "none", marginBottom: "24px",
           transition: "color 0.15s",
         }}>
-          ← All recipes
+          {t("recipe.back")}
         </Link>
 
         <div style={{ marginBottom: "28px" }}>
           <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "8px" }}>
-            Conversation by <strong style={{ color: "var(--text)" }}>{recipe.author_name}</strong>
+            {t("recipe.conversationBy")} <strong style={{ color: "var(--text)" }}>{recipe.author_name}</strong>
             {" · "}
             {new Date(recipe.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </p>

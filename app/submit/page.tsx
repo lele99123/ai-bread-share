@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/lib/language";
 
 const AI_MODELS = ["Gemini", "ChatGPT", "Claude", "DeepSeek", "Other", "Unknown"];
 const BREAD_TYPES = ["Sweet", "Savory", "Sourdough", "Other"];
@@ -45,6 +46,7 @@ interface EditableRecipe {
 type Step = "input" | "extracting" | "editing" | "submitting";
 
 export default function SubmitPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [step, setStep] = useState<Step>("input");
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function SubmitPage() {
 
   async function handleExtract() {
     if (form.chat_history.trim().length < 50) {
-      setError("Chat history is too short.");
+      setError(t("submit.chatTooShort"));
       return;
     }
     setStep("extracting");
@@ -126,13 +128,12 @@ export default function SubmitPage() {
   async function handlePublish() {
     const selected = recipes.filter((r) => r.selected);
     if (selected.length === 0) {
-      setError("Please select at least one recipe to publish.");
+      setError(t("submit.selectOne"));
       return;
     }
     setStep("submitting");
     try {
       for (const recipe of selected) {
-        // Insert recipe row
         const { data: recipeData, error: recipeErr } = await supabase
           .from("recipes")
           .insert({
@@ -150,7 +151,6 @@ export default function SubmitPage() {
           throw new Error("Failed to insert recipe");
         }
 
-        // Insert branches for this recipe
         for (const branch of recipe.branches) {
           let photo_url: string | null = null;
           if (branch.photo) {
@@ -174,13 +174,15 @@ export default function SubmitPage() {
       }
       router.push("/");
     } catch {
-      setError("Failed to publish. Please try again.");
+      setError(t("submit.failed"));
       setStep("editing");
     }
   }
 
   const selectedCount = recipes.filter((r) => r.selected).length;
   const totalBranches = recipes.reduce((sum, r) => sum + r.branches.length, 0);
+  const recipeWord = selectedCount === 1 ? t("submit.found_one") : t("submit.found_other");
+  const branchWord = totalBranches === 1 ? t("submit.branches_one") : t("submit.branches_other");
 
   /* ── Input ── */
   if (step === "input") {
@@ -188,12 +190,12 @@ export default function SubmitPage() {
       <div className="container" style={{ paddingTop: "48px", paddingBottom: "80px" }}>
         <div style={{ maxWidth: "720px", margin: "0 auto" }}>
           <div style={{ marginBottom: "40px" }}>
-            <p className="section-label" style={{ marginBottom: "10px" }}>Share with the community</p>
+            <p className="section-label" style={{ marginBottom: "10px" }}>{t("submit.label")}</p>
             <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "12px" }}>
-              Submit Recipes
+              {t("submit.title")}
             </h1>
             <p style={{ color: "var(--text-muted)", lineHeight: 1.7 }}>
-              Paste your AI conversation. We&apos;ll find every distinct recipe discussed — each becomes its own post.
+              {t("submit.description")}
             </p>
           </div>
 
@@ -205,12 +207,12 @@ export default function SubmitPage() {
 
           <div className="card" style={{ padding: "28px", marginBottom: "20px" }}>
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Your Name</label>
-              <input type="text" className="input" value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} placeholder="Anonymous" />
+              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>{t("submit.yourName")}</label>
+              <input type="text" className="input" value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} placeholder={t("submit.namePlaceholder")} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>AI Conversation *</label>
-              <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "10px" }}>Paste the full chat. We&apos;ll extract every distinct recipe discussed.</p>
+              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>{t("submit.conversation")}</label>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "10px" }}>{t("submit.conversationHint")}</p>
               <textarea
                 required
                 className="input"
@@ -218,7 +220,7 @@ export default function SubmitPage() {
                 style={{ fontFamily: "'SF Mono', 'Fira Code', monospace", fontSize: "0.8rem" }}
                 value={form.chat_history}
                 onChange={(e) => setForm({ ...form, chat_history: e.target.value })}
-                placeholder={`# you asked\n\n帮我整理一个更好的面包配方...\n\n---\n\n# gemini response\n\n帮你把这两款吐司的配方都做了升级...\n\n---\n\n# you asked\n\n如果我想加入香蕉呢？...\n\n# gemini response\n\n加入香蕉意味着配方需要进行大手术...`}
+                placeholder={t("submit.chatPlaceholder")}
               />
             </div>
           </div>
@@ -228,7 +230,7 @@ export default function SubmitPage() {
             className="btn-primary"
             style={{ width: "100%", justifyContent: "center", padding: "14px", fontSize: "1rem", borderRadius: "8px" }}
           >
-            Find All Recipes
+            {t("submit.extractBtn")}
           </button>
         </div>
       </div>
@@ -242,9 +244,9 @@ export default function SubmitPage() {
         <div style={{ maxWidth: "420px", margin: "0 auto" }}>
           <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "3px solid var(--border)", borderTopColor: "var(--accent)", animation: "spin 0.8s linear infinite", margin: "0 auto 20px" }} />
           <h2 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.5rem", fontWeight: 600, marginBottom: "8px" }}>
-            Finding all recipes...
+            {t("submit.extracting")}
           </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.9375rem" }}>Scanning the conversation for distinct breads.</p>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.9375rem" }}>{t("submit.extractingHint")}</p>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -258,13 +260,13 @@ export default function SubmitPage() {
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
           <div style={{ marginBottom: "28px" }}>
             <p className="section-label" style={{ marginBottom: "8px" }}>
-              {recipes.length} recipe{recipes.length !== 1 ? "s" : ""}, {totalBranches} branch{totalBranches !== 1 ? "es" : ""} found
+              {recipes.length} {recipeWord}, {totalBranches} {branchWord} {t("submit.found_other")}
             </p>
             <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "8px" }}>
-              Review & Select
+              {t("submit.reviewTitle")}
             </h1>
             <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-              Uncheck any recipes you don&apos;t want to publish. Edit details before posting.
+              {t("submit.reviewHint")}
             </p>
           </div>
 
@@ -287,7 +289,6 @@ export default function SubmitPage() {
                 }}
               >
                 <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                  {/* Checkbox */}
                   <input
                     type="checkbox"
                     checked={recipe.selected}
@@ -296,7 +297,6 @@ export default function SubmitPage() {
                   />
 
                   <div style={{ flex: 1 }}>
-                    {/* Header */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", gap: "12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <span style={{ width: "28px", height: "28px", borderRadius: "50%", background: recipe.selected ? "var(--accent)" : "var(--bg-muted)", color: recipe.selected ? "white" : "var(--text-faint)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: 700, flexShrink: 0 }}>
@@ -304,7 +304,7 @@ export default function SubmitPage() {
                         </span>
                         {recipe.selected && (
                           <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 600 }}>
-                            {recipe.branches.length} branch{recipe.branches.length !== 1 ? "s" : ""}
+                            {recipe.branches.length} {recipe.branches.length === 1 ? t("submit.branches_one") : t("submit.branches_other")}
                           </span>
                         )}
                       </div>
@@ -312,42 +312,39 @@ export default function SubmitPage() {
 
                     {recipe.selected && (
                       <>
-                        {/* Recipe-level fields */}
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }}>
                           <div>
-                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Recipe Title</label>
+                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.recipeTitle")}</label>
                             <input type="text" className="input" value={recipe.title} onChange={(e) => updateRecipeField(recipe.id, "title", e.target.value)} />
                           </div>
                           <div>
-                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>AI Model</label>
+                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.model")}</label>
                             <select className="input" value={recipe.ai_model} onChange={(e) => updateRecipeField(recipe.id, "ai_model", e.target.value)}>
                               {AI_MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Type</label>
+                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.type")}</label>
                             <select className="input" value={recipe.bread_type} onChange={(e) => updateRecipeField(recipe.id, "bread_type", e.target.value)}>
-                              {BREAD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                              {BREAD_TYPES.map((t_) => <option key={t_} value={t_}>{t_}</option>)}
                             </select>
                           </div>
                         </div>
 
-                        {/* Description */}
                         <div style={{ marginBottom: "16px" }}>
-                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Description</label>
+                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.description")}</label>
                           <input
                             type="text"
                             className="input"
                             value={recipe.description}
                             onChange={(e) => updateRecipeField(recipe.id, "description", e.target.value)}
-                            placeholder="Brief description of this bread"
+                            placeholder={t("submit.descriptionPlaceholder")}
                           />
                         </div>
 
-                        {/* Branches */}
                         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                           <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                            Branches — iterations of this recipe
+                            {t("submit.branchesTitle")}
                           </p>
                           {recipe.branches.map((branch, bIdx) => (
                             <div key={branch.id} style={{ background: "var(--bg-muted)", borderRadius: "8px", padding: "16px" }}>
@@ -356,9 +353,8 @@ export default function SubmitPage() {
                                   #{bIdx + 1}
                                 </span>
                                 <div style={{ flex: 1 }}>
-                                  {/* Branch title */}
                                   <div style={{ marginBottom: "10px" }}>
-                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>Branch Title</label>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>{t("submit.branchTitle")}</label>
                                     <input
                                       type="text"
                                       className="input"
@@ -368,22 +364,20 @@ export default function SubmitPage() {
                                     />
                                   </div>
 
-                                  {/* Branch notes */}
                                   <div style={{ marginBottom: "10px" }}>
-                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>Notes</label>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>{t("submit.branchNotes")}</label>
                                     <input
                                       type="text"
                                       className="input"
                                       value={branch.notes}
                                       onChange={(e) => updateBranchField(recipe.id, branch.id, "notes", e.target.value)}
-                                      placeholder="What changed from previous iteration?"
+                                      placeholder={t("submit.branchNotesPlaceholder")}
                                       style={{ fontSize: "0.875rem" }}
                                     />
                                   </div>
 
-                                  {/* Branch recipe */}
                                   <div style={{ marginBottom: "12px" }}>
-                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>Recipe</label>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>{t("submit.branchRecipe")}</label>
                                     <textarea
                                       className="input"
                                       rows={4}
@@ -393,9 +387,8 @@ export default function SubmitPage() {
                                     />
                                   </div>
 
-                                  {/* Branch photo */}
                                   <div>
-                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Photo</label>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>{t("submit.branchPhoto")}</label>
                                     <input
                                       type="file"
                                       accept="image/*"
@@ -411,7 +404,7 @@ export default function SubmitPage() {
                                         </div>
                                       ) : (
                                         <div className="upload-zone" style={{ padding: "10px" }}>
-                                          <p style={{ fontSize: "0.775rem", color: "var(--text-muted)" }}>+ Add photo (optional)</p>
+                                          <p style={{ fontSize: "0.775rem", color: "var(--text-muted)" }}>{t("submit.addPhoto")}</p>
                                         </div>
                                       )}
                                     </label>
@@ -429,10 +422,9 @@ export default function SubmitPage() {
             ))}
           </div>
 
-          {/* Actions */}
           <div style={{ display: "flex", gap: "12px" }}>
             <button onClick={() => setStep("input")} className="btn-ghost" style={{ flex: 1, justifyContent: "center", padding: "14px" }}>
-              ← Start Over
+              {t("submit.startOver")}
             </button>
             <button
               onClick={handlePublish}
@@ -440,8 +432,8 @@ export default function SubmitPage() {
               style={{ flex: 3, justifyContent: "center", padding: "14px", fontSize: "1rem" }}
             >
               {selectedCount === 0
-                ? "Select at least one recipe"
-                : `Publish ${selectedCount} Recipe${selectedCount !== 1 ? "s" : ""}`}
+                ? t("submit.selectAtLeast")
+                : t("submit.publish_" + (selectedCount === 1 ? "one" : "other"), { count: selectedCount })}
             </button>
           </div>
         </div>
@@ -454,7 +446,7 @@ export default function SubmitPage() {
     return (
       <div className="container" style={{ paddingTop: "80px", paddingBottom: "80px", textAlign: "center" }}>
         <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "3px solid var(--border)", borderTopColor: "var(--accent)", animation: "spin 0.8s linear infinite", margin: "0 auto 20px" }} />
-        <h2 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.5rem", fontWeight: 600 }}>Publishing...</h2>
+        <h2 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.5rem", fontWeight: 600 }}>{t("submit.publishing")}</h2>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );

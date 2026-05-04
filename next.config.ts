@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {
+    root: "/home/lele/code/aiBreadShare/ai-bread-share",
+  },
 };
 
 export default nextConfig;
