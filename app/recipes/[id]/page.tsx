@@ -62,17 +62,21 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
     e.preventDefault();
     if (reviewForm.rating === 0 || !session) return;
     setSubmitting(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("reviews")
       .insert({ branch_id: branchId, author_name: reviewForm.author_name || session.user.email?.split("@")[0] || "Anonymous", rating: reviewForm.rating, comment: reviewForm.comment, author_id: session.user.id })
       .select()
       .single();
+    setSubmitting(false);
+    if (error) {
+      alert("Failed to submit review: " + error.message);
+      return;
+    }
     if (data) {
       setReviews([data as Review, ...reviews]);
       setReviewForm({ author_name: "", rating: 0, comment: "" });
       setSubmitted(true);
     }
-    setSubmitting(false);
   }
 
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
