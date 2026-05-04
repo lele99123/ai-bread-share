@@ -25,8 +25,8 @@ Most recipe sites show you the polished end result. This site shows the **conver
 |---------|--------|-------|
 | Notes (uploader's notes on the recipe) | ✅ Done | `notes text` column in `recipes` and `recipe_branches` |
 | Description (short bread description) | ✅ Done | `description text` column in both tables |
-| en/cn bilingual UI | Pending | |
-| User system (auth + owner badges) | Pending | |
+| en/cn bilingual UI | ✅ Done | UI strings done, recipe content bilingual lower priority |
+| User system (auth + owner badges) | ✅ Done | Supabase Auth email OTP, session-based owner badges |
 | Jump to chat position | Pending | |
 | Recommendation system | Pending | Needs description + user system first |
 
