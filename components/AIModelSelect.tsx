@@ -20,8 +20,7 @@ export function AIModelSelect({
 }) {
   const [open, setOpen] = useState(false);
   const meta = AI_META[value] || AI_META.Unknown;
-  const iconName = value === "Other" ? "other" : value.toLowerCase();
-  const iconPath = `/${iconName}-color.svg`;
+  const iconPath = `/${value === "ChatGPT" ? "openai" : value === "Other" ? "other" : value.toLowerCase()}.svg`;
 
   return (
     <div style={{ position: "relative" }}>
@@ -100,7 +99,7 @@ export function AIModelSelect({
                   flexShrink: 0,
                 }}
               >
-                <img src={`/${name === "ChatGPT" ? "openai" : name.toLowerCase()}-color.svg`} alt={name} style={{ width: "10px", height: "10px" }} />
+                <img src={`/${name === "ChatGPT" ? "openai" : name.toLowerCase()}.svg`} alt={name} style={{ width: "10px", height: "10px" }} />
               </span>
               <span style={{ fontSize: "0.875rem", color: "var(--text)" }}>{name}</span>
             </div>
