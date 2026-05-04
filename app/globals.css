@@ -65,12 +65,11 @@ h1, h2, h3, h4 {
   background: rgba(0, 0, 0, 0.55);
   color: white;
 }
-.ai-badge.gemini   { background: rgba(66, 133, 244, 0.85); }
-.ai-badge.chatgpt  { background: rgba(16, 163, 127, 0.85); }
-.ai-badge.claude   { background: rgba(180, 83, 9, 0.85); }
-.ai-badge.deepseek { background: rgba(100, 103, 105, 0.85); }
-.ai-badge.other    { background: rgba(0, 0, 0, 0.55); }
-.ai-badge.default  { background: rgba(0, 0, 0, 0.55); }
+.ai-badge.gemini::before   { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/gemini-color.svg") center/contain no-repeat; }
+.ai-badge.chatgpt::before  { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/openai.svg") center/contain no-repeat; }
+.ai-badge.claude::before   { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/claude-color.svg") center/contain no-repeat; }
+.ai-badge.deepseek::before { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/deepseek-color.svg") center/contain no-repeat; }
+.ai-badge.other::before    { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/other.svg") center/contain no-repeat; }
 
 /* ─── Buttons ───────────────────────────────────────────────── */
 .btn-primary {
