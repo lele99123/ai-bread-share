@@ -19,6 +19,17 @@ Most recipe sites show you the polished end result. This site shows the **conver
 - **Fonts**: Playfair Display (headings) + DM Sans (body) via `next/font`
 - **Markdown**: `react-markdown` for rendering chat histories and recipes
 
+## Roadmap
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Notes (uploader's notes on the recipe) | ✅ Done | `notes text` column in `recipes` and `recipe_branches` |
+| Description (short bread description) | ✅ Done | `description text` column in both tables |
+| en/cn bilingual UI | Pending | |
+| User system (auth + owner badges) | Pending | |
+| Jump to chat position | Pending | |
+| Recommendation system | Pending | Needs description + user system first |
+
 ---
 
 ## Getting Started
