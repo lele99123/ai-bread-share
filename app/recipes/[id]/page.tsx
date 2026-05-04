@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/supabase";
-import { Recipe, Review } from "@/types";
+import { Recipe, RecipeBranch, Review } from "@/types";
 
 function getModelClass(model: string): string {
   const m = model.toLowerCase();
@@ -39,7 +39,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   );
 }
 
-function ReviewSection({ recipeId }: { recipeId: string }) {
+function ReviewSection({ branchId }: { branchId: string }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 0, comment: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -49,10 +49,10 @@ function ReviewSection({ recipeId }: { recipeId: string }) {
     supabase
       .from("reviews")
       .select("*")
-      .eq("recipe_id", recipeId)
+      .eq("branch_id", branchId)
       .order("created_at", { ascending: false })
       .then(({ data }) => setReviews((data || []) as Review[]));
-  }, [recipeId]);
+  }, [branchId]);
 
   async function submitReview(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +60,7 @@ function ReviewSection({ recipeId }: { recipeId: string }) {
     setSubmitting(true);
     const { data } = await supabase
       .from("reviews")
-      .insert({ recipe_id: recipeId, ...reviewForm })
+      .insert({ branch_id: branchId, ...reviewForm })
       .select()
       .single();
     if (data) {
@@ -128,7 +128,7 @@ function ReviewSection({ recipeId }: { recipeId: string }) {
 
       {reviews.length === 0 ? (
         <p style={{ textAlign: "center", color: "var(--text-faint)", fontSize: "0.9rem", padding: "20px 0" }}>
-          Be the first to review this recipe.
+          Be the first to review this branch.
         </p>
       ) : (
         <div>
@@ -168,21 +168,27 @@ function ReviewSection({ recipeId }: { recipeId: string }) {
 export default function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [branches, setBranches] = useState<RecipeBranch[]>([]);
+  const [activeBranchIdx, setActiveBranchIdx] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { params.then((p) => setId(p.id)); }, [params]);
 
   useEffect(() => {
     if (!id) return;
-    supabase
-      .from("recipes")
-      .select("*")
-      .eq("id", id)
-      .single()
-      .then(({ data, error }) => {
-        if (!error && data) setRecipe(data as Recipe);
-        setLoading(false);
-      });
+    Promise.all([
+      supabase.from("recipes").select("*").eq("id", id).single(),
+      supabase.from("recipe_branches").select("*, reviews (rating)").eq("recipe_id", id).order("sort_order"),
+    ]).then(([{ data: r }, { data: br }]) => {
+      if (r) setRecipe(r as Recipe);
+      const branchData = (br || []) as any[];
+      setBranches(branchData.map((b: any) => {
+        const reviews = b.reviews || [];
+        const avg = reviews.length ? reviews.reduce((s: number, rv: any) => s + rv.rating, 0) / reviews.length : 0;
+        return { ...b, reviews: [], avg_rating: avg, review_count: reviews.length } as RecipeBranch;
+      }));
+      setLoading(false);
+    });
   }, [id]);
 
   if (loading) {
@@ -206,7 +212,8 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
     );
   }
 
-  const modelClass = getModelClass(recipe.ai_model);
+  const activeBranch = branches[activeBranchIdx] || branches[0];
+  const activeModelClass = activeBranch ? getModelClass(activeBranch.ai_model) : "other";
 
   return (
     <div className="container" style={{ paddingTop: "40px", paddingBottom: "80px" }}>
@@ -223,94 +230,141 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
 
         <div style={{ marginBottom: "28px" }}>
           <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "8px" }}>
-            by <strong style={{ color: "var(--text)" }}>{recipe.author_name}</strong>
+            Conversation by <strong style={{ color: "var(--text)" }}>{recipe.author_name}</strong>
             {" · "}
             {new Date(recipe.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
-          <span className={`ai-badge ${modelClass}`}>{recipe.ai_model}</span>
-          {recipe.bread_type && (
-            <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
-              {recipe.bread_type}
-            </span>
-          )}
-          {recipe.avg_rating !== undefined && recipe.review_count !== undefined && recipe.review_count > 0 && (
-            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              ★ {recipe.avg_rating.toFixed(1)} ({recipe.review_count})
-            </span>
-          )}
-        </div>
-
-        <h1 style={{
-          fontFamily: "var(--font-playfair), serif",
-          fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)",
-          fontWeight: 700,
-          letterSpacing: "-0.02em",
-          lineHeight: 1.2,
-          marginBottom: "28px",
-        }}>
-          {recipe.title}
-        </h1>
-
-        {recipe.outcome_photo_url && (
-          <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)" }}>
-            <img
-              src={recipe.outcome_photo_url}
-              alt={recipe.title}
-              style={{ width: "100%", maxHeight: "420px", objectFit: "cover", display: "block" }}
-            />
-          </div>
-        )}
-
-        {recipe.description && (
-          <div style={{ marginBottom: "20px", padding: "14px 18px", background: "var(--bg-muted)", borderRadius: "8px", fontSize: "0.9375rem", color: "var(--text-muted)", fontStyle: "italic", borderLeft: "3px solid var(--accent)" }}>
-            {recipe.description}
-          </div>
-        )}
-
-        {recipe.notes && (
-          <div style={{ marginBottom: "20px", padding: "12px 16px", background: "var(--bg-muted)", borderRadius: "8px", fontSize: "0.875rem", color: "var(--text-muted)", borderLeft: "3px solid var(--border)" }}>
-            <span style={{ fontWeight: 600, color: "var(--text-faint)", display: "block", marginBottom: "2px", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>Baker&apos;s Notes</span>
-            {recipe.notes}
-          </div>
-        )}
-
-        {recipe.final_recipe && (
-          <div style={{ marginBottom: "40px" }}>
-            <h2 style={{
-              fontFamily: "var(--font-playfair), serif",
-              fontSize: "1.25rem",
-              fontWeight: 600,
-              marginBottom: "16px",
-              paddingBottom: "10px",
-              borderBottom: "1px solid var(--border)",
-            }}>
-              Recipe
-            </h2>
-            <div className="card" style={{ padding: "24px 28px" }}>
-              <div className="prose-bread">
-                <ReactMarkdown>{recipe.final_recipe}</ReactMarkdown>
-              </div>
+        {/* Branch Tabs */}
+        {branches.length > 0 && (
+          <div style={{ marginBottom: "32px" }}>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "24px", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
+              {branches.map((branch, idx) => (
+                <button
+                  key={branch.id}
+                  onClick={() => setActiveBranchIdx(idx)}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    border: "1px solid",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    ...(idx === activeBranchIdx
+                      ? { background: "var(--text)", color: "white", borderColor: "var(--text)" }
+                      : { background: "transparent", color: "var(--text-muted)", borderColor: "var(--border)" }),
+                  }}
+                >
+                  {branch.title}
+                </button>
+              ))}
             </div>
+
+            {/* Active branch content */}
+            {activeBranch && (
+              <div>
+                {/* Branch meta */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+                  <span className={`ai-badge ${activeModelClass}`}>{activeBranch.ai_model}</span>
+                  {activeBranch.bread_type && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                      {activeBranch.bread_type}
+                    </span>
+                  )}
+                  {activeBranch.avg_rating !== undefined && activeBranch.review_count !== undefined && activeBranch.review_count > 0 && (
+                    <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                      ★ {activeBranch.avg_rating.toFixed(1)} ({activeBranch.review_count})
+                    </span>
+                  )}
+                </div>
+
+                {/* Branch title */}
+                <h1 style={{
+                  fontFamily: "var(--font-playfair), serif",
+                  fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)",
+                  fontWeight: 700,
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.2,
+                  marginBottom: "24px",
+                }}>
+                  {activeBranch.title}
+                </h1>
+
+                {/* Recipe description */}
+                {recipe.description && (
+                  <div style={{ marginBottom: "20px", padding: "14px 18px", background: "var(--bg-muted)", borderRadius: "8px", fontSize: "0.9375rem", color: "var(--text-muted)", fontStyle: "italic", borderLeft: "3px solid var(--accent)" }}>
+                    {recipe.description}
+                  </div>
+                )}
+
+                {/* Branch notes */}
+                {activeBranch.notes && (
+                  <div style={{ marginBottom: "20px", padding: "12px 16px", background: "var(--bg-muted)", borderRadius: "8px", fontSize: "0.875rem", color: "var(--text-muted)", borderLeft: "3px solid var(--border)" }}>
+                    <span style={{ fontWeight: 600, color: "var(--text-faint)", display: "block", marginBottom: "2px", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>Baker&apos;s Notes</span>
+                    {activeBranch.notes}
+                  </div>
+                )}
+
+                {/* Photo */}
+                {activeBranch.outcome_photo_url && (
+                  <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)" }}>
+                    <img
+                      src={activeBranch.outcome_photo_url}
+                      alt={activeBranch.title}
+                      style={{ width: "100%", maxHeight: "420px", objectFit: "cover", display: "block" }}
+                    />
+                  </div>
+                )}
+
+                {/* Recipe */}
+                {activeBranch.final_recipe && (
+                  <div style={{ marginBottom: "40px" }}>
+                    <h2 style={{
+                      fontFamily: "var(--font-playfair), serif",
+                      fontSize: "1.25rem",
+                      fontWeight: 600,
+                      marginBottom: "16px",
+                      paddingBottom: "10px",
+                      borderBottom: "1px solid var(--border)",
+                    }}>
+                      Recipe
+                    </h2>
+                    <div className="card" style={{ padding: "24px 28px" }}>
+                      <div className="prose-bread">
+                        <ReactMarkdown>{activeBranch.final_recipe}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Reviews for this branch */}
+                <div>
+                  <h2 style={{
+                    fontFamily: "var(--font-playfair), serif",
+                    fontSize: "1.25rem",
+                    fontWeight: 600,
+                    marginBottom: "16px",
+                    paddingBottom: "10px",
+                    borderBottom: "1px solid var(--border)",
+                  }}>
+                    Reviews
+                  </h2>
+                  <ReviewSection key={activeBranch.id} branchId={activeBranch.id} />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        <div>
-          <h2 style={{
-            fontFamily: "var(--font-playfair), serif",
-            fontSize: "1.25rem",
-            fontWeight: 600,
-            marginBottom: "16px",
-            paddingBottom: "10px",
-            borderBottom: "1px solid var(--border)",
-          }}>
-            Reviews
-          </h2>
-          <ReviewSection recipeId={recipe.id} />
-        </div>
+        {branches.length === 0 && (
+          <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-faint)" }}>
+            <p>No branches found.</p>
+          </div>
+        )}
 
+        {/* Full conversation — always shown at bottom */}
         <div style={{ marginTop: "48px", paddingTop: "32px", borderTop: "1px solid var(--border)" }}>
           <h2 style={{
             fontFamily: "var(--font-playfair), serif",

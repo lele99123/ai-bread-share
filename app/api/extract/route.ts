@@ -6,42 +6,65 @@ const client = new Anthropic({
   apiKey: process.env.MINIMAX_API_KEY!,
 });
 
-const EXTRACTION_PROMPT = `You are a baker and AI recipe analyst. Given a chat history between a user and an AI about making bread, your job is to extract EVERY distinct recipe discussed in this conversation.
+const EXTRACTION_PROMPT = `You are a baker and AI recipe analyst. Given a chat history between a user and an AI about making bread, your job is to extract all recipes — grouped by distinct bread type.
 
-IMPORTANT: A single chat often contains MULTIPLE completely different recipes — NOT just iterations of the same recipe. Look carefully for:
+**Key concept — "same recipe" vs "different recipes":**
+- "SAME recipe, different iteration" = same bread type with small changes (flour swap, size change, oil type change, banana added, etc.) → these go in ONE branch group
+- "DIFFERENT recipe" = completely different bread (milk toast vs garlic bread vs sourdough) → these are SEPARATE recipe entries
 
-1. A new recipe section (the AI or user explicitly names or describes a new bread type, e.g. "recipe 2", "another bread", "let's try [different bread name]")
-2. A fundamentally different flavor profile or ingredient base — even if the AI iterates on it later
-3. Separate recipes that share a chat thread but have distinct identities (e.g. "milk toast" vs "black sugar longan toast" vs "italian garlic bread")
+Group iterations of the SAME recipe together. The first/primary iteration gets sort_order=0, the second gets sort_order=1, etc.
 
-You must return an ARRAY of branches — one entry per DISTINCT recipe. Do NOT merge separate recipes into one.
-
-Return ONLY a valid JSON array. No markdown, no explanation, no text outside the array.
-
-Format:
-[
-  {
-    "title": "Short descriptive title for THIS specific recipe (max 70 chars). Include the bread name and any distinguishing adjective, e.g. 'Milk Toast (Original)', 'Black Sugar Longan Toast', 'Italian Garlic Herb Bread'",
-    "ai_model": "Detect from context: Gemini, ChatGPT, Claude, DeepSeek, or Other",
-    "bread_type": "One of: Sweet, Savory, Sourdough, Other",
-    "description": "A brief 1-2 sentence description of this bread — its flavor profile, texture, or what makes it special. e.g. 'A fluffy Japanese-style milk toast with a golden crust and soft, pillowy crumb. The duration provides a subtle sweetness without being overly rich.'",
-    "final_recipe": "The final refined version of THIS recipe in clean markdown: ### Ingredients (with exact grams/ml) and ### Steps. Extract ONLY what belongs to this recipe — do NOT mix in ingredients or steps from other recipes. If no usable recipe exists for this branch, use null.",
-    "notes": "One sentence on what makes this recipe distinct or what changed from earlier versions. e.g. 'Base recipe before banana was added', 'Completely different bread — Italian style with olive oil', 'Scaled to 2lb size with adjusted hydration'"
-  },
-  ...
-]
+Return a JSON object (NOT an array) with "recipes" key:
+{
+  "recipes": [
+    {
+      "title": "Milk Toast — Base Recipe",
+      "ai_model": "Gemini",
+      "bread_type": "Sweet",
+      "description": "A brief 1-2 sentence description of this bread...",
+      "branches": [
+        {
+          "title": "Milk Toast — 1.5lb (Original)",
+          "notes": "Base recipe before any modifications",
+          "final_recipe": "### Ingredients\\n- ...\\n### Steps\\n...",
+          "sort_order": 0
+        },
+        {
+          "title": "Milk Toast — 2lb with Banana",
+          "notes": "Added 120g banana, reduced water by 40g to compensate",
+          "final_recipe": "### Ingredients\\n- ...\\n### Steps\\n...",
+          "sort_order": 1
+        }
+      ]
+    },
+    {
+      "title": "Italian Garlic Herb Bread",
+      "ai_model": "Gemini",
+      "bread_type": "Savory",
+      "description": "A rustic Italian-style bread with garlic, rosemary, and olive oil...",
+      "branches": [
+        {
+          "title": "Italian Garlic Bread — 1lb",
+          "notes": "First attempt with fresh rosemary",
+          "final_recipe": "...",
+          "sort_order": 0
+        }
+      ]
+    }
+  ]
+}
 
 Rules:
-- Return AT LEAST one branch. If the chat discusses 4 distinct breads, return 4 entries.
-- Title each branch uniquely and descriptively — the titles should clearly distinguish between different breads.
-- description: write a brief description every time, even if the recipe content is sparse
-- ai_model: same for all branches (detect once from context)
-- bread_type: judge per recipe independently
-- final_recipe: extract ONLY the ingredients and steps for that specific recipe. Do not copy ingredients from recipe A into recipe B.
-- If the chat discusses 3+ distinct breads, return 3+ entries. Maximum 8 entries.
-- Return ONLY the JSON array. No code fences, no preamble, no explanation.
+- Each entry in "recipes" = one DISTINCT bread type (e.g. "Milk Toast" or "Italian Garlic Bread")
+- Each bread type can have 1+ branches representing iterations of that SAME recipe
+- ai_model: detect once per recipe group, apply to all branches in that group
+- bread_type: set per recipe
+- description: write for the recipe (applies to all branches), even if recipe content is sparse
+- Title each recipe distinctly — milk toast branches should share "Milk Toast" prefix so they visually group together
+- branches: title should distinguish iteration (size, ingredient change). notes describe what changed. final_recipe is per-branch
+- Return 1-5 recipe entries. Each recipe can have 1-4 branches. Maximum 8 branches total across all recipes.
+- Return ONLY the JSON object. No code fences, no preamble, no explanation.
 - All keys must be double-quoted strings.
-- If a recipe has no clear ingredients/steps but is mentioned, include it with title and notes explaining why it couldn't be extracted.
 
 Chat history follows:
 `;
@@ -77,29 +100,38 @@ export async function POST(req: NextRequest) {
 
     let parsed = JSON.parse(jsonStr);
 
-    // Ensure it's always an array
-    if (!Array.isArray(parsed)) {
-      parsed = [parsed];
+    // Normalize to { recipes: [...] }
+    if (!parsed.recipes) {
+      // API returned flat array — convert to grouped format
+      if (Array.isArray(parsed)) {
+        parsed = { recipes: parsed.map((p: any, i: number) => ({ ...p, sort_order: i })) };
+      } else {
+        throw new Error("Unexpected response format from extraction model");
+      }
     }
 
-    const branches = parsed.map((branch: any) => ({
-      title: branch.title && typeof branch.title === "string" ? branch.title : "Untitled Recipe",
+    const recipes = parsed.recipes.map((recipe: any) => ({
+      title: recipe.title && typeof recipe.title === "string" ? recipe.title : "Untitled Recipe",
       ai_model: ["Gemini", "ChatGPT", "Claude", "DeepSeek", "Other"].find((m) =>
-        (branch.ai_model || "").toLowerCase().includes(m.toLowerCase())
+        (recipe.ai_model || "").toLowerCase().includes(m.toLowerCase())
       ) || "Unknown",
-      bread_type: ["Sweet", "Savory", "Sourdough", "Other"].includes(branch.bread_type)
-        ? branch.bread_type
+      bread_type: ["Sweet", "Savory", "Sourdough", "Other"].includes(recipe.bread_type)
+        ? recipe.bread_type
         : "Sweet",
-      description: branch.description && typeof branch.description === "string" ? branch.description : null,
-      final_recipe: branch.final_recipe && typeof branch.final_recipe === "string" ? branch.final_recipe : null,
-      notes: branch.notes && typeof branch.notes === "string" ? branch.notes : null,
+      description: recipe.description && typeof recipe.description === "string" ? recipe.description : null,
+      branches: (recipe.branches || []).map((b: any, i: number) => ({
+        title: b.title && typeof b.title === "string" ? b.title : `Iteration ${i + 1}`,
+        notes: b.notes && typeof b.notes === "string" ? b.notes : null,
+        final_recipe: b.final_recipe && typeof b.final_recipe === "string" ? b.final_recipe : null,
+        sort_order: typeof b.sort_order === "number" ? b.sort_order : i,
+      })),
     }));
 
-    if (branches.length === 0) {
+    if (recipes.length === 0) {
       return NextResponse.json({ error: "No recipes could be extracted from this conversation." }, { status: 422 });
     }
 
-    return NextResponse.json({ branches });
+    return NextResponse.json({ recipes });
   } catch (err: any) {
     console.error("Extraction failed:", err?.message);
     return NextResponse.json({ error: "Extraction failed. Check MINIMAX_API_KEY." }, { status: 500 });

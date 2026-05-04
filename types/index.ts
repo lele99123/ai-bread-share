@@ -12,11 +12,29 @@ export interface Recipe {
   created_at: string;
   avg_rating?: number;
   review_count?: number;
+  branches?: RecipeBranch[];
+}
+
+export interface RecipeBranch {
+  id: string;
+  recipe_id: string;
+  title: string;
+  ai_model: string;
+  bread_type: string | null;
+  final_recipe: string | null;
+  outcome_photo_url: string | null;
+  notes: string | null;
+  description: string | null;
+  sort_order: number;
+  created_at: string;
+  avg_rating?: number;
+  review_count?: number;
 }
 
 export interface Review {
   id: string;
   recipe_id: string;
+  branch_id: string | null;
   author_name: string;
   rating: number;
   comment: string | null;

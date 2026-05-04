@@ -7,20 +7,39 @@ import { supabase } from "@/lib/supabase";
 const AI_MODELS = ["Gemini", "ChatGPT", "Claude", "DeepSeek", "Other", "Unknown"];
 const BREAD_TYPES = ["Sweet", "Savory", "Sourdough", "Other"];
 
+interface ExtractedBranch {
+  title: string;
+  notes?: string;
+  final_recipe?: string;
+  sort_order: number;
+}
+
 interface ExtractedRecipe {
   title: string;
   ai_model: string;
   bread_type: string;
-  final_recipe: string;
-  notes?: string;
   description?: string;
+  branches: ExtractedBranch[];
 }
 
-interface PublishableRecipe extends ExtractedRecipe {
-  id: string; // temp react key
-  selected: boolean;
+interface EditableBranch {
+  id: string;
+  title: string;
+  notes: string;
+  final_recipe: string;
+  sort_order: number;
   photo: File | null;
   photoPreview: string | null;
+}
+
+interface EditableRecipe {
+  id: string;
+  title: string;
+  ai_model: string;
+  bread_type: string;
+  description: string;
+  branches: EditableBranch[];
+  selected: boolean;
 }
 
 type Step = "input" | "extracting" | "editing" | "submitting";
@@ -30,7 +49,7 @@ export default function SubmitPage() {
   const [step, setStep] = useState<Step>("input");
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ chat_history: "", author_name: "" });
-  const [recipes, setRecipes] = useState<PublishableRecipe[]>([]);
+  const [recipes, setRecipes] = useState<EditableRecipe[]>([]);
 
   async function handleExtract() {
     if (form.chat_history.trim().length < 50) {
@@ -48,13 +67,24 @@ export default function SubmitPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Extraction failed");
 
+      const extracted = data.recipes || [];
       setRecipes(
-        (data.recipes || data.branches || []).map((r: ExtractedRecipe, i: number) => ({
-          ...r,
+        extracted.map((r: ExtractedRecipe, i: number) => ({
           id: `recipe-${Date.now()}-${i}`,
+          title: r.title,
+          ai_model: r.ai_model,
+          bread_type: r.bread_type,
+          description: r.description || "",
           selected: true,
-          photo: null,
-          photoPreview: null,
+          branches: r.branches.map((b: ExtractedBranch, j: number) => ({
+            id: `branch-${Date.now()}-${i}-${j}`,
+            title: b.title,
+            notes: b.notes || "",
+            final_recipe: b.final_recipe || "",
+            sort_order: b.sort_order,
+            photo: null,
+            photoPreview: null,
+          })),
         }))
       );
       setStep("editing");
@@ -68,16 +98,29 @@ export default function SubmitPage() {
     setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, selected: !r.selected } : r)));
   }
 
-  function updateField<K extends keyof PublishableRecipe>(id: string, key: K, value: PublishableRecipe[K]) {
+  function updateRecipeField<K extends keyof EditableRecipe>(id: string, key: K, value: EditableRecipe[K]) {
     setRecipes((prev) => prev.map((r) => (r.id === id ? { ...r, [key]: value } : r)));
   }
 
-  function handlePhotoChange(id: string, e: React.ChangeEvent<HTMLInputElement>) {
+  function updateBranchField(recipeId: string, branchId: string, key: keyof EditableBranch, value: any) {
+    setRecipes((prev) =>
+      prev.map((r) =>
+        r.id === recipeId
+          ? {
+              ...r,
+              branches: r.branches.map((b) => (b.id === branchId ? { ...b, [key]: value } : b)),
+            }
+          : r
+      )
+    );
+  }
+
+  function handlePhotoChange(recipeId: string, branchId: string, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     const preview = URL.createObjectURL(file);
-    updateField(id, "photoPreview", preview);
-    updateField(id, "photo", file);
+    updateBranchField(recipeId, branchId, "photoPreview", preview);
+    updateBranchField(recipeId, branchId, "photo", file);
   }
 
   async function handlePublish() {
@@ -89,25 +132,45 @@ export default function SubmitPage() {
     setStep("submitting");
     try {
       for (const recipe of selected) {
-        let photo_url: string | null = null;
-        if (recipe.photo) {
-          const ext = recipe.photo.name.split(".").pop();
-          const fileName = `${Date.now()}-${Math.random()}.${ext}`;
-          await supabase.storage.from("outcome-photos").upload(fileName, recipe.photo);
-          const { data } = supabase.storage.from("outcome-photos").getPublicUrl(fileName);
-          photo_url = data.publicUrl;
+        // Insert recipe row
+        const { data: recipeData, error: recipeErr } = await supabase
+          .from("recipes")
+          .insert({
+            title: recipe.title,
+            ai_model: recipe.ai_model,
+            bread_type: recipe.bread_type,
+            description: recipe.description || null,
+            chat_history: form.chat_history,
+            author_name: form.author_name || "Anonymous",
+          })
+          .select()
+          .single();
+
+        if (recipeErr || !recipeData) {
+          throw new Error("Failed to insert recipe");
         }
-        await supabase.from("recipes").insert({
-          title: recipe.title,
-          ai_model: recipe.ai_model,
-          bread_type: recipe.bread_type,
-          final_recipe: recipe.final_recipe || null,
-          notes: recipe.notes || null,
-          description: recipe.description || null,
-          outcome_photo_url: photo_url,
-          chat_history: form.chat_history,
-          author_name: form.author_name || "Anonymous",
-        });
+
+        // Insert branches for this recipe
+        for (const branch of recipe.branches) {
+          let photo_url: string | null = null;
+          if (branch.photo) {
+            const ext = branch.photo.name.split(".").pop();
+            const fileName = `${Date.now()}-${Math.random()}.${ext}`;
+            await supabase.storage.from("outcome-photos").upload(fileName, branch.photo);
+            const { data: urlData } = supabase.storage.from("outcome-photos").getPublicUrl(fileName);
+            photo_url = urlData.publicUrl;
+          }
+          await supabase.from("recipe_branches").insert({
+            recipe_id: recipeData.id,
+            title: branch.title,
+            ai_model: recipe.ai_model,
+            bread_type: recipe.bread_type,
+            notes: branch.notes || null,
+            final_recipe: branch.final_recipe || null,
+            outcome_photo_url: photo_url,
+            sort_order: branch.sort_order,
+          });
+        }
       }
       router.push("/");
     } catch {
@@ -117,6 +180,7 @@ export default function SubmitPage() {
   }
 
   const selectedCount = recipes.filter((r) => r.selected).length;
+  const totalBranches = recipes.reduce((sum, r) => sum + r.branches.length, 0);
 
   /* ── Input ── */
   if (step === "input") {
@@ -191,10 +255,10 @@ export default function SubmitPage() {
   if (step === "editing") {
     return (
       <div className="container" style={{ paddingTop: "40px", paddingBottom: "80px" }}>
-        <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
           <div style={{ marginBottom: "28px" }}>
             <p className="section-label" style={{ marginBottom: "8px" }}>
-              {recipes.length} recipe{recipes.length !== 1 ? "s" : ""} found — select which to publish
+              {recipes.length} recipe{recipes.length !== 1 ? "s" : ""}, {totalBranches} branch{totalBranches !== 1 ? "es" : ""} found
             </p>
             <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "8px" }}>
               Review & Select
@@ -211,7 +275,7 @@ export default function SubmitPage() {
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginBottom: "32px" }}>
-            {recipes.map((recipe, idx) => (
+            {recipes.map((recipe, rIdx) => (
               <div
                 key={recipe.id}
                 className="card"
@@ -233,91 +297,129 @@ export default function SubmitPage() {
 
                   <div style={{ flex: 1 }}>
                     {/* Header */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px", gap: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", gap: "12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: recipe.selected ? "var(--accent)" : "var(--bg-muted)", color: recipe.selected ? "white" : "var(--text-faint)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, flexShrink: 0 }}>
-                          {idx + 1}
+                        <span style={{ width: "28px", height: "28px", borderRadius: "50%", background: recipe.selected ? "var(--accent)" : "var(--bg-muted)", color: recipe.selected ? "white" : "var(--text-faint)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: 700, flexShrink: 0 }}>
+                          {rIdx + 1}
                         </span>
                         {recipe.selected && (
-                          <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 600 }}>Will be published</span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--accent)", fontWeight: 600 }}>
+                            {recipe.branches.length} branch{recipe.branches.length !== 1 ? "s" : ""}
+                          </span>
                         )}
                       </div>
                     </div>
 
                     {recipe.selected && (
                       <>
-                        {/* Fields */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
+                        {/* Recipe-level fields */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }}>
                           <div>
-                            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "5px" }}>Title</label>
-                            <input type="text" className="input" value={recipe.title} onChange={(e) => updateField(recipe.id, "title", e.target.value)} />
+                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Recipe Title</label>
+                            <input type="text" className="input" value={recipe.title} onChange={(e) => updateRecipeField(recipe.id, "title", e.target.value)} />
                           </div>
                           <div>
-                            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "5px" }}>AI Model</label>
-                            <select className="input" value={recipe.ai_model} onChange={(e) => updateField(recipe.id, "ai_model", e.target.value)}>
+                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>AI Model</label>
+                            <select className="input" value={recipe.ai_model} onChange={(e) => updateRecipeField(recipe.id, "ai_model", e.target.value)}>
                               {AI_MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "5px" }}>Type</label>
-                            <select className="input" value={recipe.bread_type} onChange={(e) => updateField(recipe.id, "bread_type", e.target.value)}>
+                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Type</label>
+                            <select className="input" value={recipe.bread_type} onChange={(e) => updateRecipeField(recipe.id, "bread_type", e.target.value)}>
                               {BREAD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                             </select>
                           </div>
                         </div>
 
-                        {/* Notes + Description */}
-                        <div style={{ marginBottom: "12px" }}>
-                          <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "5px" }}>Notes</label>
-                          <input
-                            type="text"
-                            className="input"
-                            value={recipe.notes || ""}
-                            onChange={(e) => updateField(recipe.id, "notes", e.target.value)}
-                            placeholder="Problems, questions, or observations while making this bread"
-                          />
-                        </div>
-
-                        {/* Recipe text */}
-                        <div style={{ marginBottom: "14px" }}>
-                          <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "5px" }}>Recipe</label>
-                          <textarea
-                            className="input"
-                            rows={6}
-                            style={{ fontFamily: "'SF Mono', 'Fira Code', monospace", fontSize: "0.8rem" }}
-                            value={recipe.final_recipe}
-                            onChange={(e) => updateField(recipe.id, "final_recipe", e.target.value)}
-                          />
-                        </div>
-
                         {/* Description */}
-                        <div style={{ marginBottom: "14px" }}>
-                          <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "5px" }}>Description</label>
+                        <div style={{ marginBottom: "16px" }}>
+                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Description</label>
                           <input
                             type="text"
                             className="input"
-                            value={recipe.description || ""}
-                            onChange={(e) => updateField(recipe.id, "description", e.target.value)}
-                            placeholder="Brief description of this bread — flavor, texture, what makes it special"
+                            value={recipe.description}
+                            onChange={(e) => updateRecipeField(recipe.id, "description", e.target.value)}
+                            placeholder="Brief description of this bread"
                           />
                         </div>
 
-                        {/* Photo */}
-                        <div>
-                          <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>Photo</label>
-                          <input type="file" accept="image/*" onChange={(e) => handlePhotoChange(recipe.id, e)} className="input" id={`photo-${recipe.id}`} style={{ display: "none" }} />
-                          <label htmlFor={`photo-${recipe.id}`} style={{ display: "block", cursor: "pointer" }}>
-                            {recipe.photoPreview ? (
-                              <div style={{ borderRadius: "8px", overflow: "hidden", position: "relative" }}>
-                                <img src={recipe.photoPreview} alt="Preview" style={{ width: "100%", maxHeight: "200px", objectFit: "cover" }} />
-                                <div style={{ position: "absolute", bottom: "8px", right: "8px", background: "rgba(0,0,0,0.55)", color: "white", fontSize: "0.7rem", padding: "3px 8px", borderRadius: "4px" }}>Change</div>
+                        {/* Branches */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                          <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                            Branches — iterations of this recipe
+                          </p>
+                          {recipe.branches.map((branch, bIdx) => (
+                            <div key={branch.id} style={{ background: "var(--bg-muted)", borderRadius: "8px", padding: "16px" }}>
+                              <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                                <span style={{ fontSize: "0.7rem", color: "var(--text-faint)", fontWeight: 600, marginTop: "8px", width: "20px", textAlign: "center" }}>
+                                  #{bIdx + 1}
+                                </span>
+                                <div style={{ flex: 1 }}>
+                                  {/* Branch title */}
+                                  <div style={{ marginBottom: "10px" }}>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>Branch Title</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={branch.title}
+                                      onChange={(e) => updateBranchField(recipe.id, branch.id, "title", e.target.value)}
+                                      style={{ fontSize: "0.875rem" }}
+                                    />
+                                  </div>
+
+                                  {/* Branch notes */}
+                                  <div style={{ marginBottom: "10px" }}>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>Notes</label>
+                                    <input
+                                      type="text"
+                                      className="input"
+                                      value={branch.notes}
+                                      onChange={(e) => updateBranchField(recipe.id, branch.id, "notes", e.target.value)}
+                                      placeholder="What changed from previous iteration?"
+                                      style={{ fontSize: "0.875rem" }}
+                                    />
+                                  </div>
+
+                                  {/* Branch recipe */}
+                                  <div style={{ marginBottom: "12px" }}>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "3px" }}>Recipe</label>
+                                    <textarea
+                                      className="input"
+                                      rows={4}
+                                      style={{ fontFamily: "'SF Mono', 'Fira Code', monospace", fontSize: "0.8rem" }}
+                                      value={branch.final_recipe}
+                                      onChange={(e) => updateBranchField(recipe.id, branch.id, "final_recipe", e.target.value)}
+                                    />
+                                  </div>
+
+                                  {/* Branch photo */}
+                                  <div>
+                                    <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Photo</label>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => handlePhotoChange(recipe.id, branch.id, e)}
+                                      id={`photo-${branch.id}`}
+                                      style={{ display: "none" }}
+                                    />
+                                    <label htmlFor={`photo-${branch.id}`} style={{ display: "block", cursor: "pointer" }}>
+                                      {branch.photoPreview ? (
+                                        <div style={{ borderRadius: "8px", overflow: "hidden", position: "relative" }}>
+                                          <img src={branch.photoPreview} alt="Preview" style={{ width: "100%", maxHeight: "160px", objectFit: "cover" }} />
+                                          <div style={{ position: "absolute", bottom: "6px", right: "6px", background: "rgba(0,0,0,0.55)", color: "white", fontSize: "0.65rem", padding: "2px 7px", borderRadius: "4px" }}>Change</div>
+                                        </div>
+                                      ) : (
+                                        <div className="upload-zone" style={{ padding: "10px" }}>
+                                          <p style={{ fontSize: "0.775rem", color: "var(--text-muted)" }}>+ Add photo (optional)</p>
+                                        </div>
+                                      )}
+                                    </label>
+                                  </div>
+                                </div>
                               </div>
-                            ) : (
-                              <div className="upload-zone" style={{ padding: "14px" }}>
-                                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>+ Add photo (optional)</p>
-                              </div>
-                            )}
-                          </label>
+                            </div>
+                          ))}
                         </div>
                       </>
                     )}
