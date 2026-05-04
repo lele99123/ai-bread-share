@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/supabase";
 import { Recipe, RecipeBranch, Review } from "@/types";
 import { useLanguage } from "@/lib/language";
+import { useAuth } from "@/lib/auth-provider";
 
 function getModelClass(model: string): string {
   const m = model.toLowerCase();
@@ -40,8 +41,9 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   );
 }
 
-function ReviewSection({ branchId }: { branchId: string }) {
+function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeAuthorId: string | null }) {
   const { t } = useLanguage();
+  const session = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 0, comment: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -58,11 +60,11 @@ function ReviewSection({ branchId }: { branchId: string }) {
 
   async function submitReview(e: React.FormEvent) {
     e.preventDefault();
-    if (reviewForm.rating === 0) return;
+    if (reviewForm.rating === 0 || !session) return;
     setSubmitting(true);
     const { data } = await supabase
       .from("reviews")
-      .insert({ branch_id: branchId, ...reviewForm })
+      .insert({ branch_id: branchId, author_name: reviewForm.author_name || session.user.email?.split("@")[0] || "Anonymous", rating: reviewForm.rating, comment: reviewForm.comment, author_id: session.user.id })
       .select()
       .single();
     if (data) {
@@ -83,7 +85,11 @@ function ReviewSection({ branchId }: { branchId: string }) {
         </span>
       </div>
 
-      {!submitted ? (
+      {!session ? (
+        <div style={{ padding: "16px", background: "var(--bg-muted)", borderRadius: "8px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.875rem" }}>
+          Sign in to leave a review
+        </div>
+      ) : !submitted ? (
         <form onSubmit={submitReview} style={{ marginBottom: "24px" }}>
           <div className="card" style={{ padding: "20px 24px" }}>
             <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "12px" }}>{t("recipe.leaveReview")}</p>
@@ -141,7 +147,7 @@ function ReviewSection({ branchId }: { branchId: string }) {
                   <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--text)" }}>
                     {review.author_name || "Anonymous"}
                   </span>
-                  {review.is_owner_review && (
+                  {review.author_id === recipeAuthorId && session?.user?.id === recipeAuthorId && (
                     <span style={{ fontSize: "0.7rem", background: "var(--accent-light)", color: "var(--accent-dark)", padding: "2px 6px", borderRadius: "4px", fontWeight: 600 }}>
                       {t("recipe.ownerBadge")}
                     </span>
@@ -169,6 +175,7 @@ function ReviewSection({ branchId }: { branchId: string }) {
 
 export default function RecipePage({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useLanguage();
+  const session = useAuth();
   const [id, setId] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [branches, setBranches] = useState<RecipeBranch[]>([]);
@@ -362,7 +369,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   }}>
                     Reviews
                   </h2>
-                  <ReviewSection key={activeBranch.id} branchId={activeBranch.id} />
+                  <ReviewSection key={activeBranch.id} branchId={activeBranch.id} recipeAuthorId={recipe?.author_id || null} />
                 </div>
               </div>
             )}

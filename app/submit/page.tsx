@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language";
+import { useAuth } from "@/lib/auth-provider";
 import { AIModelSelect } from "@/components/AIModelSelect";
 
 const AI_MODELS = ["Gemini", "ChatGPT", "Claude", "DeepSeek", "Other", "Unknown"];
@@ -50,6 +51,7 @@ type Step = "input" | "extracting" | "editing" | "submitting";
 
 export default function SubmitPage() {
   const { t } = useLanguage();
+  const session = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<Step>("input");
   const [error, setError] = useState<string | null>(null);
@@ -146,7 +148,8 @@ export default function SubmitPage() {
             bread_type: recipe.bread_type,
             description: recipe.description || null,
             chat_history: form.chat_history,
-            author_name: form.author_name || "Anonymous",
+            author_name: form.author_name || session?.user?.email?.split("@")[0] || "Anonymous",
+            author_id: session?.user?.id || null,
           })
           .select()
           .single();

@@ -9,6 +9,7 @@ export interface Recipe {
   description: string | null;
   chat_history: string;
   author_name: string;
+  author_id: string | null;
   created_at: string;
   avg_rating?: number;
   review_count?: number;
@@ -37,6 +38,7 @@ export interface Review {
   recipe_id: string;
   branch_id: string | null;
   author_name: string;
+  author_id: string | null;
   rating: number;
   comment: string | null;
   is_owner_review: boolean;

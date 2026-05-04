@@ -3,6 +3,8 @@ import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/language";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { AuthProvider } from "@/lib/auth-provider";
+import { AuthButton } from "@/components/AuthButton";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -31,7 +33,8 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
       <body className="min-h-screen flex flex-col" style={{ fontFamily: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif" }}>
         <LanguageProvider>
-          <nav className="nav">
+          <AuthProvider>
+            <nav className="nav">
             <div className="nav-inner">
               <a href="/" className="nav-logo">
                 AI Bread <span>Share</span>
@@ -40,6 +43,7 @@ export default function RootLayout({
                 <a href="/" className="btn-ghost" style={{ fontSize: '0.8125rem' }}>Browse</a>
                 <a href="/submit" className="btn-primary">Share a Recipe</a>
                 <LanguageToggle />
+                <AuthButton />
               </div>
             </div>
           </nav>
@@ -53,7 +57,8 @@ export default function RootLayout({
               <p>AI Bread Share &mdash; Where AI meets the perfect crumb</p>
             </div>
           </footer>
-        </LanguageProvider>
+        </AuthProvider>
+          </LanguageProvider>
       </body>
     </html>
   );
