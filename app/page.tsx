@@ -31,17 +31,18 @@ function Stars({ rating }: { rating: number }) {
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   const { t } = useLanguage();
   const modelClass = getModelClass(recipe.ai_model);
-  const primaryBranch = recipe.branches?.[0];
   const branchCount = recipe.branches?.length || 0;
+  const branchWithPhoto = recipe.branches?.find((b) => b.outcome_photo_url);
+  const displayBranch = branchWithPhoto || recipe.branches?.[0];
 
   return (
     <Link href={`/recipes/${recipe.id}`} className="card group block" style={{ textDecoration: 'none' }}>
       {/* Photo */}
       <div style={{ height: '220px', background: 'var(--bg-muted)', position: 'relative', overflow: 'hidden' }}>
-        {primaryBranch?.outcome_photo_url ? (
+        {displayBranch?.outcome_photo_url ? (
           <img
-            src={primaryBranch.outcome_photo_url}
-            alt={primaryBranch.title}
+            src={displayBranch.outcome_photo_url}
+            alt={displayBranch.title}
             style={{
               width: '100%', height: '100%', objectFit: 'cover',
               transition: 'transform 0.3s ease',
@@ -62,7 +63,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
         )}
         {/* Badges overlay */}
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {primaryBranch && (
+          {displayBranch && (
             <span className={`ai-badge ${modelClass}`}>{recipe.ai_model}</span>
           )}
           {branchCount > 1 && (
@@ -79,8 +80,8 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 
       {/* Content */}
       <div style={{ padding: '20px' }}>
-        {primaryBranch?.bread_type && (
-          <p className="section-label" style={{ marginBottom: '6px' }}>{primaryBranch.bread_type}</p>
+        {displayBranch?.bread_type && (
+          <p className="section-label" style={{ marginBottom: '6px' }}>{displayBranch.bread_type}</p>
         )}
         <h3 style={{
           fontFamily: "'Playfair Display', serif",
@@ -90,17 +91,17 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           marginBottom: '6px',
           lineHeight: 1.3,
         }}>
-          {primaryBranch?.title || recipe.title}
+          {displayBranch?.title || recipe.title}
         </h3>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginBottom: '10px' }}>
           by {recipe.author_name}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {primaryBranch?.review_count !== undefined && primaryBranch.review_count > 0 ? (
+          {displayBranch?.review_count !== undefined && displayBranch.review_count > 0 ? (
             <>
-              <Stars rating={primaryBranch.avg_rating || 0} />
+              <Stars rating={displayBranch.avg_rating || 0} />
               <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
-                ({primaryBranch.review_count})
+                ({displayBranch.review_count})
               </span>
             </>
           ) : (
