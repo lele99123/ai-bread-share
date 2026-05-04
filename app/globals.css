@@ -1,0 +1,290 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────── */
+:root {
+  --bg:           #FAF7F2;   /* warm cream */
+  --bg-card:      #FFFFFF;
+  --bg-muted:     #F3EDE3;   /* warm off-white */
+  --text:         #1C1917;   /* warm near-black */
+  --text-muted:   #78716C;   /* warm stone */
+  --text-faint:   #A8A29E;   /* lighter stone */
+  --accent:       #C27558;   /* terracotta / warm amber-brown */
+  --accent-dark:  #9C5A3C;
+  --accent-light: #E8C4B4;   /* pale terracotta for backgrounds */
+  --border:       #E7E5E0;   /* warm light gray */
+  --border-dark:  #D4CFC6;
+
+  /* AI model colors — flat, no gradients */
+  --model-gemini:   #4285F4;
+  --model-chatgpt:  #10A37F;
+  --model-claude:   #B45309;
+  --model-deepseek: #0066CC;
+  --model-other:    #6B7280;
+}
+
+/* ─── Base ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Typography ───────────────────────────────────────────── */
+h1, h2, h3, h4 {
+  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+/* ─── Layout ────────────────────────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ─── AI Model Badges — flat color, no gradients ────────────── */
+.ai-badge {
+  display: inline-block;
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  color: white;
+}
+.ai-badge.gemini   { background: var(--model-gemini); }
+.ai-badge.chatgpt  { background: var(--model-chatgpt); }
+.ai-badge.claude   { background: var(--model-claude); }
+.ai-badge.deepseek { background: var(--model-deepseek); }
+.ai-badge.other    { background: var(--model-other); }
+.ai-badge.default  { background: var(--model-other); }
+
+/* ─── Buttons ───────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: white;
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+.btn-primary:hover  { background: var(--accent-dark); }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ─── Cards ─────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 4px 24px rgba(28, 25, 23, 0.08);
+  border-color: var(--border-dark);
+}
+
+/* ─── Form Elements ─────────────────────────────────────────── */
+.input {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+  font-size: 0.9375rem;
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+  appearance: none;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(194, 117, 88, 0.12);
+}
+.input::placeholder { color: var(--text-faint); }
+
+textarea.input { resize: vertical; line-height: 1.6; }
+
+select.input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2378716C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+/* ─── Section Labels ────────────────────────────────────────── */
+.section-label {
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+/* ─── Stars ─────────────────────────────────────────────────── */
+.stars { color: #F59E0B; letter-spacing: 1px; }
+.stars-empty { color: var(--border); }
+
+/* ─── Divider ───────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
+
+/* ─── Nav ───────────────────────────────────────────────────── */
+.nav {
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.nav-logo span { color: var(--accent); }
+
+/* ─── Footer ────────────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 0.875rem;
+  margin-top: auto;
+}
+
+/* ─── Prose (markdown rendering) ─────────────────────────────── */
+.prose-bread {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--text);
+}
+.prose-bread h1,
+.prose-bread h2,
+.prose-bread h3 {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  margin-top: 1.75em;
+  margin-bottom: 0.5em;
+}
+.prose-bread h1 { font-size: 1.5rem; }
+.prose-bread h2 { font-size: 1.25rem; font-weight: 600; }
+.prose-bread h3 { font-size: 1.1rem; font-weight: 600; }
+.prose-bread p { margin-bottom: 1em; }
+.prose-bread ul, .prose-bread ol { padding-left: 1.5em; margin-bottom: 1em; }
+.prose-bread li { margin-bottom: 0.25em; }
+.prose-bread code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.85em;
+  background: var(--bg-muted);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+}
+.prose-bread pre {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1em 1.25em;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+.prose-bread blockquote {
+  border-left: 3px solid var(--accent-light);
+  padding-left: 1em;
+  color: var(--text-muted);
+  margin: 1em 0;
+  font-style: italic;
+}
+
+/* ─── Loading Skeleton ──────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--border) 50%, var(--bg-muted) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ─── Upload zone ───────────────────────────────────────────── */
+.upload-zone {
+  border: 2px dashed var(--border-dark);
+  border-radius: 12px;
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.upload-zone:hover {
+  border-color: var(--accent);
+  background: rgba(232, 196, 180, 0.06);
+}
+.upload-zone .upload-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  color: var(--text-faint);
+}
