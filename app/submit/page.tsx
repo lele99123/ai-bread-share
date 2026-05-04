@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language";
+import { AIModelSelect } from "@/components/AIModelSelect";
 
 const AI_MODELS = ["Gemini", "ChatGPT", "Claude", "DeepSeek", "Other", "Unknown"];
 const BREAD_TYPES = ["Sweet", "Savory", "Sourdough", "Other"];
@@ -323,9 +324,7 @@ export default function SubmitPage() {
                           </div>
                           <div>
                             <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.model")}</label>
-                            <select className="input" value={recipe.ai_model} onChange={(e) => updateRecipeField(recipe.id, "ai_model", e.target.value)}>
-                              {AI_MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
-                            </select>
+                            <AIModelSelect value={recipe.ai_model} onChange={(v) => updateRecipeField(recipe.id, "ai_model", v)} />
                           </div>
                           <div>
                             <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.type")}</label>
