@@ -39,20 +39,7 @@ export function AIModelSelect({
           color: "var(--text)",
         }}
       >
-        <span
-          style={{
-            width: "16px",
-            height: "16px",
-            borderRadius: "3px",
-            background: meta.color,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <img src={iconPath} alt={value} style={{ width: "10px", height: "10px" }} />
-        </span>
+        <img src={iconPath} alt={value} style={{ width: "16px", height: "16px", flexShrink: 0 }} />
         <span style={{ flex: 1 }}>{value}</span>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
           <path d="M2 3.5L5 6.5L8 3.5" stroke="var(--text-faint)" strokeWidth="1.5" strokeLinecap="round" />
@@ -87,20 +74,7 @@ export function AIModelSelect({
                 background: name === value ? "var(--bg-muted)" : "transparent",
               }}
             >
-              <span
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: "3px",
-                  background: m.color,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <img src={`/${name === "ChatGPT" ? "openai" : name.toLowerCase()}.svg`} alt={name} style={{ width: "10px", height: "10px" }} />
-              </span>
+              <img src={`/${name === "ChatGPT" ? "openai" : name.toLowerCase()}.svg`} alt={name} style={{ width: "16px", height: "16px", flexShrink: 0 }} />
               <span style={{ fontSize: "0.875rem", color: "var(--text)" }}>{name}</span>
             </div>
           ))}

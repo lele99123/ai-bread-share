@@ -50,7 +50,7 @@ h1, h2, h3, h4 {
   padding: 0 24px;
 }
 
-/* ─── AI Model Badges — flat color, no gradients ────────────── */
+/* ─── AI Model Badges — white background, colored icon + text ─── */
 .ai-badge {
   display: inline-flex;
   align-items: center;
@@ -62,20 +62,20 @@ h1, h2, h3, h4 {
   letter-spacing: 0.06em;
   padding: 0.25rem 0.65rem;
   border-radius: 4px;
-  color: white;
+  border: 1px solid transparent;
 }
-.ai-badge.gemini   { background: var(--model-gemini); }
-.ai-badge.chatgpt  { background: var(--model-chatgpt); }
-.ai-badge.claude   { background: var(--model-claude); }
-.ai-badge.deepseek { background: var(--model-deepseek); }
-.ai-badge.other    { background: var(--model-other); }
-.ai-badge.default  { background: var(--model-other); }
+.ai-badge.gemini   { color: var(--model-gemini);   border-color: var(--model-gemini); }
+.ai-badge.chatgpt  { color: var(--model-chatgpt);  border-color: var(--model-chatgpt); }
+.ai-badge.claude   { color: var(--model-claude);   border-color: var(--model-claude); }
+.ai-badge.deepseek { color: var(--model-deepseek); border-color: var(--model-deepseek); }
+.ai-badge.other    { color: var(--model-other);    border-color: var(--model-other); }
+.ai-badge.default  { color: var(--model-other);    border-color: var(--model-other); }
 
-.ai-badge.gemini::before   { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/gemini.svg") center/contain no-repeat; }
-.ai-badge.chatgpt::before  { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/openai.svg") center/contain no-repeat; }
-.ai-badge.claude::before   { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/claude.svg") center/contain no-repeat; }
-.ai-badge.deepseek::before { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/deepseek.svg") center/contain no-repeat; }
-.ai-badge.other::before    { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/other.svg") center/contain no-repeat; }
+.ai-badge.gemini::before   { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/gemini.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
+.ai-badge.chatgpt::before  { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/openai.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
+.ai-badge.claude::before   { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/claude.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
+.ai-badge.deepseek::before { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/deepseek.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
+.ai-badge.other::before    { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/other.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
 
 /* ─── Buttons ───────────────────────────────────────────────── */
 .btn-primary {
