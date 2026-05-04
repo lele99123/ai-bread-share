@@ -6,26 +6,42 @@ const client = new Anthropic({
   apiKey: process.env.MINIMAX_API_KEY!,
 });
 
-const EXTRACTION_PROMPT = `You are a baker and AI recipe analyst. Given a chat history between a user and an AI about making bread, extract the following and return ONLY valid JSON (no markdown, no explanation):
+const EXTRACTION_PROMPT = `You are a baker and AI recipe analyst. Given a chat history between a user and an AI about making bread, your job is to extract EVERY distinct recipe discussed in this conversation.
 
-{
-  "title": "A short, descriptive recipe title in English (max 60 chars)",
-  "ai_model": "The AI model name (e.g. Gemini, ChatGPT, Claude, DeepSeek, or Other)",
-  "bread_type": "One of: Sweet, Savory, Sourdough, Other",
-  "final_recipe": "The final recipe extracted from the conversation, formatted in clean markdown with ### Ingredients and ### Steps sections. Include exact measurements. If no clear recipe exists, say 'null' for this field."
-}
+IMPORTANT: A single chat often contains MULTIPLE completely different recipes — NOT just iterations of the same recipe. Look carefully for:
+
+1. A new recipe section (the AI or user explicitly names or describes a new bread type, e.g. "recipe 2", "another bread", "let's try [different bread name]")
+2. A fundamentally different flavor profile or ingredient base — even if the AI iterates on it later
+3. Separate recipes that share a chat thread but have distinct identities (e.g. "milk toast" vs "black sugar longan toast" vs "italian garlic bread")
+
+You must return an ARRAY of branches — one entry per DISTINCT recipe. Do NOT merge separate recipes into one.
+
+Return ONLY a valid JSON array. No markdown, no explanation, no text outside the array.
+
+Format:
+[
+  {
+    "title": "Short descriptive title for THIS specific recipe (max 70 chars). Include the bread name and any distinguishing adjective, e.g. 'Milk Toast (Original)', 'Black Sugar Longan Toast', 'Italian Garlic Herb Bread'",
+    "ai_model": "Detect from context: Gemini, ChatGPT, Claude, DeepSeek, or Other",
+    "bread_type": "One of: Sweet, Savory, Sourdough, Other",
+    "final_recipe": "The final refined version of THIS recipe in clean markdown: ### Ingredients (with exact grams/ml) and ### Steps. Extract ONLY what belongs to this recipe — do NOT mix in ingredients or steps from other recipes. If no usable recipe exists for this branch, use null.",
+    "notes": "One sentence on what makes this recipe distinct or what changed from earlier versions. e.g. 'Base recipe before banana was added', 'Completely different bread — Italian style with olive oil', 'Scaled to 2lb size with adjusted hydration'"
+  },
+  ...
+]
 
 Rules:
-- title should be specific and descriptive, e.g. "Banana Milk Toast — Gemini Iteration 3"
-- ai_model: detect from conversation context (Gemini, ChatGPT/ChatGPT-4, Claude, DeepSeek, or Other)
-- bread_type: judge from ingredients and flavor profile
-- final_recipe: extract the best version of the recipe discussed — the most refined/updated version, not the first draft. Use null if the conversation is only troubleshooting without producing a usable recipe.
-- Return ONLY the JSON. No preamble, no explanation.
-- JSON keys must be double-quoted.
-- If bread_type is unclear, default to "Sweet".
-- If no recipe can be extracted at all, use null for title and final_recipe and set ai_model to "Unknown".
+- Return AT LEAST one branch. If the chat discusses 4 distinct breads, return 4 entries.
+- Title each branch uniquely and descriptively — the titles should clearly distinguish between different breads.
+- ai_model: same for all branches (detect once from context)
+- bread_type: judge per recipe independently
+- final_recipe: extract ONLY the ingredients and steps for that specific recipe. Do not copy ingredients from recipe A into recipe B.
+- If the chat discusses 3+ distinct breads, return 3+ entries. Maximum 8 entries.
+- Return ONLY the JSON array. No code fences, no preamble, no explanation.
+- All keys must be double-quoted strings.
+- If a recipe has no clear ingredients/steps but is mentioned, include it with title and notes explaining why it couldn't be extracted.
 
-Chat history:
+Chat history follows:
 `;
 
 export async function POST(req: NextRequest) {
@@ -42,7 +58,7 @@ export async function POST(req: NextRequest) {
   try {
     const message = await client.messages.create({
       model: "MiniMax-M2.7",
-      max_tokens: 2000,
+      max_tokens: 8000,
       messages: [
         {
           role: "user",
@@ -59,18 +75,28 @@ export async function POST(req: NextRequest) {
 
     let parsed = JSON.parse(jsonStr);
 
-    // Sanity-check the response
-    if (!parsed.title || typeof parsed.title !== "string") {
-      parsed.title = "Untitled Recipe";
-    }
-    if (!parsed.ai_model || typeof parsed.ai_model !== "string") {
-      parsed.ai_model = "Unknown";
-    }
-    if (!["Sweet", "Savory", "Sourdough", "Other"].includes(parsed.bread_type)) {
-      parsed.bread_type = "Sweet";
+    // Ensure it's always an array
+    if (!Array.isArray(parsed)) {
+      parsed = [parsed];
     }
 
-    return NextResponse.json(parsed);
+    const branches = parsed.map((branch: any) => ({
+      title: branch.title && typeof branch.title === "string" ? branch.title : "Untitled Recipe",
+      ai_model: ["Gemini", "ChatGPT", "Claude", "DeepSeek", "Other"].find((m) =>
+        (branch.ai_model || "").toLowerCase().includes(m.toLowerCase())
+      ) || "Unknown",
+      bread_type: ["Sweet", "Savory", "Sourdough", "Other"].includes(branch.bread_type)
+        ? branch.bread_type
+        : "Sweet",
+      final_recipe: branch.final_recipe && typeof branch.final_recipe === "string" ? branch.final_recipe : null,
+      notes: branch.notes && typeof branch.notes === "string" ? branch.notes : null,
+    }));
+
+    if (branches.length === 0) {
+      return NextResponse.json({ error: "No recipes could be extracted from this conversation." }, { status: 422 });
+    }
+
+    return NextResponse.json({ branches });
   } catch (err: any) {
     console.error("Extraction failed:", err?.message);
     return NextResponse.json({ error: "Extraction failed. Check MINIMAX_API_KEY." }, { status: 500 });
