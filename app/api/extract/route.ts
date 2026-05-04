@@ -22,6 +22,7 @@ Return a JSON object (NOT an array) with "recipes" key:
       "ai_model": "Gemini",
       "bread_type": "Sweet",
       "description": "A brief 1-2 sentence description of this bread...",
+      "tags": ["banana", "sweet", "milk", "soft-crumb"],
       "branches": [
         {
           "title": "Milk Toast — 1.5lb (Original)",
@@ -42,6 +43,7 @@ Return a JSON object (NOT an array) with "recipes" key:
       "ai_model": "Gemini",
       "bread_type": "Savory",
       "description": "A rustic Italian-style bread with garlic, rosemary, and olive oil...",
+      "tags": ["garlic", "rosemary", "savory", "crusty"],
       "branches": [
         {
           "title": "Italian Garlic Bread — 1lb",
@@ -60,6 +62,7 @@ Rules:
 - ai_model: detect once per recipe group, apply to all branches in that group
 - bread_type: set per recipe
 - description: write for the recipe (applies to all branches), even if recipe content is sparse
+- tags: extract 2-6 comma-separated keywords describing the bread — ingredients (banana, chocolate, cheese), qualities (sweet, savory, soft-crumb, crusty), techniques (sourdough, fermentation) — NOT the title words
 - Title each recipe distinctly — milk toast branches should share "Milk Toast" prefix so they visually group together
 - branches: title should distinguish iteration (size, ingredient change). notes describe what changed. final_recipe is per-branch
 - Return 1-5 recipe entries. Each recipe can have 1-4 branches. Maximum 8 branches total across all recipes.
@@ -119,6 +122,7 @@ export async function POST(req: NextRequest) {
         ? recipe.bread_type
         : "Sweet",
       description: recipe.description && typeof recipe.description === "string" ? recipe.description : null,
+      tags: Array.isArray(recipe.tags) ? recipe.tags.filter((t: any) => typeof t === "string") : [],
       branches: (recipe.branches || []).map((b: any, i: number) => ({
         title: b.title && typeof b.title === "string" ? b.title : `Iteration ${i + 1}`,
         notes: b.notes && typeof b.notes === "string" ? b.notes : null,

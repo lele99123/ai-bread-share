@@ -27,6 +27,7 @@ create table if not exists recipe_branches (
   outcome_photo_url text,
   notes text,
   description text,
+  tags text[],
   sort_order integer default 0,
   created_at timestamp with time zone default now()
 );

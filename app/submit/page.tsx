@@ -20,6 +20,7 @@ interface ExtractedRecipe {
   ai_model: string;
   bread_type: string;
   description?: string;
+  tags?: string[];
   branches: ExtractedBranch[];
 }
 
@@ -39,6 +40,7 @@ interface EditableRecipe {
   ai_model: string;
   bread_type: string;
   description: string;
+  tags: string[];
   branches: EditableBranch[];
   selected: boolean;
 }
@@ -77,6 +79,7 @@ export default function SubmitPage() {
           ai_model: r.ai_model,
           bread_type: r.bread_type,
           description: r.description || "",
+          tags: r.tags || [],
           selected: true,
           branches: r.branches.map((b: ExtractedBranch, j: number) => ({
             id: `branch-${Date.now()}-${i}-${j}`,
@@ -168,6 +171,7 @@ export default function SubmitPage() {
             notes: branch.notes || null,
             final_recipe: branch.final_recipe || null,
             outcome_photo_url: photo_url,
+            tags: recipe.tags,
             sort_order: branch.sort_order,
           });
         }
@@ -339,6 +343,17 @@ export default function SubmitPage() {
                             value={recipe.description}
                             onChange={(e) => updateRecipeField(recipe.id, "description", e.target.value)}
                             placeholder={t("submit.descriptionPlaceholder")}
+                          />
+                        </div>
+
+                        <div style={{ marginBottom: "16px" }}>
+                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Tags</label>
+                          <input
+                            type="text"
+                            className="input"
+                            value={recipe.tags.join(", ")}
+                            onChange={(e) => updateRecipeField(recipe.id, "tags", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+                            placeholder="banana, sweet, soft-crumb"
                           />
                         </div>
 

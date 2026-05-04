@@ -301,6 +301,14 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   </div>
                 )}
 
+                {activeBranch.tags && activeBranch.tags.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "20px" }}>
+                    {activeBranch.tags.map((tag) => (
+                      <span key={tag} style={{ fontSize: "0.7rem", padding: "3px 8px", borderRadius: "4px", background: "var(--accent-light)", color: "var(--accent-dark)", fontWeight: 600 }}>{tag}</span>
+                    ))}
+                  </div>
+                )}
+
                 {/* Branch notes */}
                 {activeBranch.notes && (
                   <div style={{ marginBottom: "20px", padding: "12px 16px", background: "var(--bg-muted)", borderRadius: "8px", fontSize: "0.875rem", color: "var(--text-muted)", borderLeft: "3px solid var(--border)" }}>

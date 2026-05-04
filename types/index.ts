@@ -25,6 +25,7 @@ export interface RecipeBranch {
   outcome_photo_url: string | null;
   notes: string | null;
   description: string | null;
+  tags: string[];
   sort_order: number;
   created_at: string;
   avg_rating?: number;
