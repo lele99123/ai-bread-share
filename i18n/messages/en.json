@@ -77,6 +77,8 @@
     "submitting": "Submitting...",
     "thanksReview": "Thanks for your review!",
     "beFirstReview": "Be the first to review this branch.",
+    "ownerBadge": "owner",
+    "noReviews": "No reviews yet",
     "notFound": "Recipe not found",
     "backHome": "Back to home"
   },

@@ -41,6 +41,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
 }
 
 function ReviewSection({ branchId }: { branchId: string }) {
+  const { t } = useLanguage();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 0, comment: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -78,23 +79,23 @@ function ReviewSection({ branchId }: { branchId: string }) {
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", padding: "12px 16px", background: "var(--bg-muted)", borderRadius: "8px" }}>
         <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-          {reviews.length === 0 ? "No reviews yet" : `${reviews.length} review${reviews.length !== 1 ? "s" : ""} · ★ ${avgRating.toFixed(1)}`}
+          {reviews.length === 0 ? t("recipe.noReviews") : `${reviews.length} review${reviews.length !== 1 ? "s" : ""} · ★ ${avgRating.toFixed(1)}`}
         </span>
       </div>
 
       {!submitted ? (
         <form onSubmit={submitReview} style={{ marginBottom: "24px" }}>
           <div className="card" style={{ padding: "20px 24px" }}>
-            <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "12px" }}>Leave a review</p>
+            <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "12px" }}>{t("recipe.leaveReview")}</p>
             <div style={{ marginBottom: "12px" }}>
-              <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "6px" }}>Your rating</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "6px" }}>{t("recipe.yourRating")}</p>
               <StarPicker value={reviewForm.rating} onChange={(r) => setReviewForm({ ...reviewForm, rating: r })} />
             </div>
             <div style={{ marginBottom: "10px" }}>
               <input
                 type="text"
                 className="input"
-                placeholder="Your name (optional)"
+                placeholder={t("recipe.yourNameOptional")}
                 value={reviewForm.author_name}
                 onChange={(e) => setReviewForm({ ...reviewForm, author_name: e.target.value })}
               />
@@ -103,7 +104,7 @@ function ReviewSection({ branchId }: { branchId: string }) {
               <textarea
                 className="input"
                 rows={2}
-                placeholder="How did it turn out?"
+                placeholder={t("recipe.howDidItTurnOut")}
                 value={reviewForm.comment}
                 onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
               />
@@ -114,7 +115,7 @@ function ReviewSection({ branchId }: { branchId: string }) {
               className="btn-primary"
               style={{ fontSize: "0.875rem", padding: "8px 18px" }}
             >
-              {submitting ? "Submitting..." : "Submit Review"}
+              {submitting ? t("recipe.submitting") : t("recipe.submitReview")}
             </button>
           </div>
         </form>
@@ -123,13 +124,13 @@ function ReviewSection({ branchId }: { branchId: string }) {
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path d="M4 10l4 4 8-8" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Thanks for your review!
+          {t("recipe.thanksReview")}
         </div>
       )}
 
       {reviews.length === 0 ? (
         <p style={{ textAlign: "center", color: "var(--text-faint)", fontSize: "0.9rem", padding: "20px 0" }}>
-          Be the first to review this branch.
+          {t("recipe.beFirstReview")}
         </p>
       ) : (
         <div>
@@ -142,7 +143,7 @@ function ReviewSection({ branchId }: { branchId: string }) {
                   </span>
                   {review.is_owner_review && (
                     <span style={{ fontSize: "0.7rem", background: "var(--accent-light)", color: "var(--accent-dark)", padding: "2px 6px", borderRadius: "4px", fontWeight: 600 }}>
-                      owner
+                      {t("recipe.ownerBadge")}
                     </span>
                   )}
                 </div>
