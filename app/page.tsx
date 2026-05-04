@@ -28,18 +28,16 @@ function Stars({ rating }: { rating: number }) {
 }
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
-  const primaryBranch = recipe.branches?.[0];
-  const modelClass = primaryBranch ? getModelClass(primaryBranch.ai_model) : "other";
-  const branchCount = recipe.branches?.length || 0;
+  const modelClass = getModelClass(recipe.ai_model);
 
   return (
     <Link href={`/recipes/${recipe.id}`} className="card group block" style={{ textDecoration: 'none' }}>
       {/* Photo */}
       <div style={{ height: '220px', background: 'var(--bg-muted)', position: 'relative', overflow: 'hidden' }}>
-        {primaryBranch?.outcome_photo_url ? (
+        {recipe.outcome_photo_url ? (
           <img
-            src={primaryBranch.outcome_photo_url}
-            alt={primaryBranch.title}
+            src={recipe.outcome_photo_url}
+            alt={recipe.title}
             style={{
               width: '100%', height: '100%', objectFit: 'cover',
               transition: 'transform 0.3s ease',
@@ -58,27 +56,16 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             </svg>
           </div>
         )}
-        {/* Badges overlay */}
+        {/* Badge overlay */}
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {primaryBranch && (
-            <span className={`ai-badge ${modelClass}`}>{primaryBranch.ai_model}</span>
-          )}
-          {branchCount > 1 && (
-            <span style={{
-              background: 'rgba(0,0,0,0.5)', color: 'white',
-              fontSize: '0.7rem', padding: '0.2rem 0.5rem', borderRadius: '9999px',
-              fontWeight: 600,
-            }}>
-              {branchCount} variants
-            </span>
-          )}
+          <span className={`ai-badge ${modelClass}`}>{recipe.ai_model}</span>
         </div>
       </div>
 
       {/* Content */}
       <div style={{ padding: '20px' }}>
-        {primaryBranch?.bread_type && (
-          <p className="section-label" style={{ marginBottom: '6px' }}>{primaryBranch.bread_type}</p>
+        {recipe.bread_type && (
+          <p className="section-label" style={{ marginBottom: '6px' }}>{recipe.bread_type}</p>
         )}
         <h3 style={{
           fontFamily: "'Playfair Display', serif",
@@ -88,17 +75,17 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           marginBottom: '6px',
           lineHeight: 1.3,
         }}>
-          {primaryBranch?.title || recipe.title}
+          {recipe.title}
         </h3>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginBottom: '10px' }}>
           by {recipe.author_name}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {primaryBranch?.review_count !== undefined && primaryBranch.review_count > 0 ? (
+          {recipe.review_count !== undefined && recipe.review_count > 0 ? (
             <>
-              <Stars rating={primaryBranch.avg_rating || 0} />
+              <Stars rating={recipe.avg_rating || 0} />
               <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
-                ({primaryBranch.review_count})
+                ({recipe.review_count})
               </span>
             </>
           ) : (
@@ -117,36 +104,38 @@ export default function Home() {
   const [selectedType, setSelectedType] = useState("All");
 
   useEffect(() => {
-    supabase
-      .from("recipes")
-      .select(`
-        *,
-        recipe_branches (
-          *,
-          reviews (rating)
-        )
-      `)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setRecipes(data.map((r: any) => {
-            const branches = (r.recipe_branches || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
-            const enriched = branches.map((b: any) => {
-              const reviews = b.reviews || [];
-              const avg = reviews.length ? reviews.reduce((s: number, rv: any) => s + rv.rating, 0) / reviews.length : 0;
-              return { ...b, avg_rating: avg, review_count: reviews.length };
-            });
-            return { ...r, branches: enriched };
-          }));
-        }
-        setLoading(false);
-      });
+    Promise.all([
+      supabase
+        .from("recipes")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("reviews")
+        .select("recipe_id, rating"),
+    ]).then(([{ data: recipesData, error }, { data: reviewsData }]) => {
+      if (!error && recipesData) {
+        const reviewsMap: Record<string, { sum: number; count: number }> = {};
+        (reviewsData || []).forEach((r: any) => {
+          if (!reviewsMap[r.recipe_id]) reviewsMap[r.recipe_id] = { sum: 0, count: 0 };
+          reviewsMap[r.recipe_id].sum += r.rating;
+          reviewsMap[r.recipe_id].count += 1;
+        });
+        setRecipes(recipesData.map((r: any) => {
+          const stats = reviewsMap[r.id] || { sum: 0, count: 0 };
+          return {
+            ...r,
+            avg_rating: stats.count ? stats.sum / stats.count : 0,
+            review_count: stats.count,
+          } as Recipe;
+        }));
+      }
+      setLoading(false);
+    });
   }, []);
 
   const filtered = recipes.filter((r) => {
-    const primary = r.branches?.[0];
-    if (selectedModel !== "All" && primary && !primary.ai_model.toLowerCase().includes(selectedModel.toLowerCase())) return false;
-    if (selectedType !== "All" && primary && primary.bread_type !== selectedType) return false;
+    if (selectedModel !== "All" && !r.ai_model.toLowerCase().includes(selectedModel.toLowerCase())) return false;
+    if (selectedType !== "All" && r.bread_type !== selectedType) return false;
     return true;
   });
 

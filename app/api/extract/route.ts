@@ -24,6 +24,7 @@ Format:
     "title": "Short descriptive title for THIS specific recipe (max 70 chars). Include the bread name and any distinguishing adjective, e.g. 'Milk Toast (Original)', 'Black Sugar Longan Toast', 'Italian Garlic Herb Bread'",
     "ai_model": "Detect from context: Gemini, ChatGPT, Claude, DeepSeek, or Other",
     "bread_type": "One of: Sweet, Savory, Sourdough, Other",
+    "description": "A brief 1-2 sentence description of this bread — its flavor profile, texture, or what makes it special. e.g. 'A fluffy Japanese-style milk toast with a golden crust and soft, pillowy crumb. The duration provides a subtle sweetness without being overly rich.'",
     "final_recipe": "The final refined version of THIS recipe in clean markdown: ### Ingredients (with exact grams/ml) and ### Steps. Extract ONLY what belongs to this recipe — do NOT mix in ingredients or steps from other recipes. If no usable recipe exists for this branch, use null.",
     "notes": "One sentence on what makes this recipe distinct or what changed from earlier versions. e.g. 'Base recipe before banana was added', 'Completely different bread — Italian style with olive oil', 'Scaled to 2lb size with adjusted hydration'"
   },
@@ -33,6 +34,7 @@ Format:
 Rules:
 - Return AT LEAST one branch. If the chat discusses 4 distinct breads, return 4 entries.
 - Title each branch uniquely and descriptively — the titles should clearly distinguish between different breads.
+- description: write a brief description every time, even if the recipe content is sparse
 - ai_model: same for all branches (detect once from context)
 - bread_type: judge per recipe independently
 - final_recipe: extract ONLY the ingredients and steps for that specific recipe. Do not copy ingredients from recipe A into recipe B.
@@ -88,6 +90,7 @@ export async function POST(req: NextRequest) {
       bread_type: ["Sweet", "Savory", "Sourdough", "Other"].includes(branch.bread_type)
         ? branch.bread_type
         : "Sweet",
+      description: branch.description && typeof branch.description === "string" ? branch.description : null,
       final_recipe: branch.final_recipe && typeof branch.final_recipe === "string" ? branch.final_recipe : null,
       notes: branch.notes && typeof branch.notes === "string" ? branch.notes : null,
     }));
