@@ -50,32 +50,27 @@ h1, h2, h3, h4 {
   padding: 0 24px;
 }
 
-/* ─── AI Model Badges — white background, colored icon + text ─── */
+/* ─── AI Model Badges — pill style, semi-transparent dark, no icon ─── */
 .ai-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 0.25rem 0.65rem;
-  border-radius: 4px;
-  border: 1px solid transparent;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
 }
-.ai-badge.gemini   { color: var(--model-gemini);   border-color: var(--model-gemini); }
-.ai-badge.chatgpt  { color: var(--model-chatgpt);  border-color: var(--model-chatgpt); }
-.ai-badge.claude   { color: var(--model-claude);   border-color: var(--model-claude); }
-.ai-badge.deepseek { color: var(--model-deepseek); border-color: var(--model-deepseek); }
-.ai-badge.other    { color: var(--model-other);    border-color: var(--model-other); }
-.ai-badge.default  { color: var(--model-other);    border-color: var(--model-other); }
-
-.ai-badge.gemini::before   { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/gemini.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
-.ai-badge.chatgpt::before  { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/openai.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
-.ai-badge.claude::before   { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/claude.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
-.ai-badge.deepseek::before { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/deepseek.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
-.ai-badge.other::before    { content: ''; display: inline-block; width: 14px; height: 14px; background: url("/other.svg") center/contain no-repeat; filter: brightness(0) saturate(100%) invert(34%) sepia(98%) saturate(2000%) hue-rotate(200deg); }
+.ai-badge.gemini   { background: rgba(66, 133, 244, 0.85); }
+.ai-badge.chatgpt  { background: rgba(16, 163, 127, 0.85); }
+.ai-badge.claude   { background: rgba(180, 83, 9, 0.85); }
+.ai-badge.deepseek { background: rgba(100, 103, 105, 0.85); }
+.ai-badge.other    { background: rgba(0, 0, 0, 0.55); }
+.ai-badge.default  { background: rgba(0, 0, 0, 0.55); }
 
 /* ─── Buttons ───────────────────────────────────────────────── */
 .btn-primary {
