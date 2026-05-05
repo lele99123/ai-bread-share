@@ -216,14 +216,8 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   }, [id]);
 
   function scrollToChatLine(lineStart: number | null) {
-    if (!chatRef.current || lineStart === null) return;
-    const lines = chatRef.current.querySelectorAll("[data-line]");
-    const target = lines[lineStart] as HTMLElement;
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      target.style.background = "var(--accent-light)";
-      setTimeout(() => { target.style.background = ""; }, 2000);
-    }
+    if (!chatRef.current) return;
+    chatRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   if (loading) {
@@ -476,9 +470,8 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
           }}>
             <div className="prose-bread" style={{ fontSize: "0.875rem" }}>
               <div ref={chatRef}>
-                {recipe.chat_history.split("\n").map((line, i) => (
-                  <span key={i} data-line={i}>{line}</span>
-                ))}
+                <ReactMarkdown>{recipe.chat_history}</ReactMarkdown>
+                <div id="chat-scroll-anchor" style={{ height: 0 }} />
               </div>
             </div>
           </div>
