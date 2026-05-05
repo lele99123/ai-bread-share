@@ -200,6 +200,24 @@ export default function SubmitPage() {
 
   /* ── Input ── */
   if (step === "input") {
+    if (!session) {
+      return (
+        <div className="container" style={{ paddingTop: "80px", paddingBottom: "80px", textAlign: "center" }}>
+          <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+            <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "2rem", marginBottom: "16px" }}>
+              Sign in to share a recipe
+            </h1>
+            <p style={{ color: "var(--text-muted)", marginBottom: "32px" }}>
+              You need to be signed in to submit recipes.
+            </p>
+            <button className="btn-primary" onClick={() => document.dispatchEvent(new CustomEvent("open-auth-modal"))}>
+              Sign in
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="container" style={{ paddingTop: "48px", paddingBottom: "80px" }}>
         <div style={{ maxWidth: "720px", margin: "0 auto" }}>

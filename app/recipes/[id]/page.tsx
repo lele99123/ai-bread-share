@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { Recipe, RecipeBranch, Review } from "@/types";
 import { useLanguage } from "@/lib/language";
 import { useAuth } from "@/lib/auth-provider";
+import { AuthModal } from "@/components/AuthModal";
 
 function getModelClass(model: string): string {
   const m = model.toLowerCase();
@@ -91,7 +92,9 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
 
       {!session ? (
         <div style={{ padding: "16px", background: "var(--bg-muted)", borderRadius: "8px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.875rem" }}>
-          Sign in to leave a review
+          <button className="btn-ghost" onClick={() => document.dispatchEvent(new CustomEvent("open-auth-modal"))}>
+            Sign in to leave a review
+          </button>
         </div>
       ) : !submitted ? (
         <form onSubmit={submitReview} style={{ marginBottom: "24px" }}>
@@ -187,6 +190,14 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   const [loading, setLoading] = useState(true);
   const chatRef = useRef<HTMLDivElement>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [chatCollapsed, setChatCollapsed] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setModalOpen(true);
+    document.addEventListener("open-auth-modal", handler);
+    return () => document.removeEventListener("open-auth-modal", handler);
+  }, []);
 
   useEffect(() => { params.then((p) => setId(p.id)); }, [params]);
 
@@ -451,31 +462,45 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
           </div>
         )}
 
-        {/* Full conversation — always shown at bottom */}
+        {/* Full conversation — collapsed by default */}
         <div style={{ marginTop: "48px", paddingTop: "32px", borderTop: "1px solid var(--border)" }}>
-          <h2 style={{
-            fontFamily: "var(--font-playfair), serif",
-            fontSize: "1.125rem",
-            fontWeight: 600,
-            marginBottom: "16px",
-            color: "var(--text-muted)",
-          }}>
+          <button
+            onClick={() => setChatCollapsed(!chatCollapsed)}
+            style={{
+              display: "flex", alignItems: "center", gap: "8px",
+              background: "none", border: "none", cursor: "pointer",
+              fontFamily: "var(--font-playfair), serif",
+              fontSize: "1.125rem", fontWeight: 600,
+              color: "var(--text-muted)", padding: 0,
+            }}
+          >
             Full AI Conversation
-          </h2>
-          <div style={{
-            background: "var(--bg-muted)",
-            border: "1px solid var(--border)",
-            borderRadius: "12px",
-            padding: "24px 28px",
-          }}>
-            <div className="prose-bread" style={{ fontSize: "0.875rem" }}>
-              <div ref={chatRef}>
-                <ReactMarkdown>{recipe.chat_history}</ReactMarkdown>
-                <div id="chat-scroll-anchor" style={{ height: 0 }} />
+            <svg
+              width="14" height="14" viewBox="0 0 14 14" fill="none"
+              style={{ transform: chatCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s" }}
+            >
+              <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {!chatCollapsed && (
+            <div style={{
+              background: "var(--bg-muted)",
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              padding: "24px 28px",
+              marginTop: "16px",
+            }}>
+              <div className="prose-bread" style={{ fontSize: "0.875rem" }}>
+                <div ref={chatRef}>
+                  <ReactMarkdown>{recipe.chat_history}</ReactMarkdown>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
+
+        <AuthModal open={modalOpen} onClose={() => setModalOpen(false)} />
 
       </div>
     </div>

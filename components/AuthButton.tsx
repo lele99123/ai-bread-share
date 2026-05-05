@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-provider";
 import { AuthModal } from "./AuthModal";
 import { supabase } from "@/lib/supabase";
@@ -8,6 +8,12 @@ import { supabase } from "@/lib/supabase";
 export function AuthButton() {
   const session = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setModalOpen(true);
+    document.addEventListener("open-auth-modal", handler);
+    return () => document.removeEventListener("open-auth-modal", handler);
+  }, []);
 
   if (session) {
     return (
