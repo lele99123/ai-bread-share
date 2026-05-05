@@ -57,7 +57,7 @@ export default function SubmitPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("input");
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({ chat_history: "", author_name: "" });
+  const [form, setForm] = useState({ chat_history: "", author_name: session?.user?.user_metadata?.full_name || "" });
   const [recipes, setRecipes] = useState<EditableRecipe[]>([]);
 
   async function handleExtract() {
@@ -220,10 +220,17 @@ export default function SubmitPage() {
           )}
 
           <div className="card" style={{ padding: "28px", marginBottom: "20px" }}>
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>{t("submit.yourName")}</label>
-              <input type="text" className="input" value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} placeholder={t("submit.namePlaceholder")} />
-            </div>
+            {session ? (
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>{t("submit.yourName")}</label>
+                <input type="text" className="input" value={session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "Anonymous"} readOnly />
+              </div>
+            ) : (
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>{t("submit.yourName")}</label>
+                <input type="text" className="input" value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} placeholder={t("submit.namePlaceholder")} required />
+              </div>
+            )}
             <div>
               <label style={{ display: "block", fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>{t("submit.conversation")}</label>
               <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "10px" }}>{t("submit.conversationHint")}</p>
