@@ -186,6 +186,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   const [activeBranchIdx, setActiveBranchIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const chatRef = useRef<HTMLDivElement>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
 
   useEffect(() => { params.then((p) => setId(p.id)); }, [params]);
 
@@ -204,6 +205,14 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
       }));
       setLoading(false);
     });
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    fetch(`/api/recommend?recipe_id=${id}&limit=4`)
+      .then(r => r.json())
+      .then(d => setRecommendations(d.recommendations || []))
+      .catch(() => {});
   }, [id]);
 
   function scrollToChatLine(lineStart: number | null) {
@@ -407,6 +416,44 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
         {branches.length === 0 && (
           <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-faint)" }}>
             <p>No branches found.</p>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <div style={{ marginTop: "48px", paddingTop: "32px", borderTop: "1px solid var(--border)" }}>
+            <h2 style={{
+              fontFamily: "var(--font-playfair), serif",
+              fontSize: "1.125rem",
+              fontWeight: 600,
+              marginBottom: "16px",
+              color: "var(--text-muted)",
+            }}>
+              You might also like
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px" }}>
+              {recommendations.map(rec => (
+                <Link key={rec.id} href={`/recipes/${rec.id}`} className="card" style={{ textDecoration: "none" }}>
+                  <div style={{ height: "120px", background: "var(--bg-muted)", overflow: "hidden" }}>
+                    {rec.outcome_photo_url ? (
+                      <img src={rec.outcome_photo_url} alt={rec.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="32" height="32" viewBox="0 0 56 56" fill="none" style={{ opacity: 0.2 }}>
+                          <ellipse cx="28" cy="38" rx="22" ry="12" fill="var(--text)"/>
+                          <ellipse cx="28" cy="30" rx="18" ry="9" fill="var(--text)"/>
+                          <ellipse cx="28" cy="23" rx="14" ry="7" fill="var(--text)"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ padding: "12px" }}>
+                    <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "4px" }}>{rec.bread_type}</p>
+                    <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", lineHeight: 1.3 }}>{rec.title}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 
