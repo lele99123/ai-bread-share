@@ -22,6 +22,25 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "AI Bread Share",
   description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
+  keywords: ["bread recipes", "AI baking", " sourdough", "homemade bread", "bread machine recipes"],
+  authors: [{ name: "AI Bread Share" }],
+  openGraph: {
+    title: "AI Bread Share",
+    description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
+    url: "https://ai-bread-share.vercel.app",
+    siteName: "AI Bread Share",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Bread Share",
+    description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

@@ -141,6 +141,14 @@ export default function SubmitPage() {
       setError(t("submit.selectOne"));
       return;
     }
+    if (session?.user?.id) {
+      const { data: stats } = await supabase.rpc("check_upload_limit", { user_uuid: session.user.id });
+      if (!stats) {
+        setError("Monthly limit reached (10 recipes/month). Upgrade for more.");
+        setStep("editing");
+        return;
+      }
+    }
     setStep("submitting");
     try {
       for (const recipe of selected) {
