@@ -158,7 +158,7 @@ export default function Home() {
     <div className="container" style={{ paddingTop: '48px', paddingBottom: '64px' }}>
 
       {/* ── Header ── */}
-      <div style={{ marginBottom: '48px', maxWidth: '600px' }}>
+      <div style={{ marginBottom: '48px', maxWidth: '600px' }} className="home-header">
         <p className="section-label" style={{ marginBottom: '12px' }}>{t("home.label")}</p>
         <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, marginBottom: '16px', letterSpacing: '-0.02em' }}>
           {t("home.title")}<br />
