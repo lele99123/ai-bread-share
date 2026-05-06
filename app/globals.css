@@ -94,8 +94,11 @@ h1, h2, h3, h4 {
   }
 
   .nav-browse-btn::before {
-    content: '☰';
-    font-size: 1rem;
+    content: '';
+    background: url('/home.svg') center/contain no-repeat;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
   }
 
   .nav-share-btn::before {
