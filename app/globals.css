@@ -74,12 +74,12 @@ h1, h2, h3, h4 {
   /* Nav: collapse nav buttons to icon-only on mobile */
   .nav-inner {
     height: 52px;
-    padding: 0 12px;
-    gap: 8px;
+    padding: 0 10px;
+    gap: 6px;
   }
 
   .nav-logo {
-    font-size: 1.0625rem !important;
+    font-size: 1rem !important;
   }
 
   .nav-inner .btn-primary,
@@ -88,18 +88,21 @@ h1, h2, h3, h4 {
     font-size: 0.7rem;
   }
 
-  .nav-inner .btn-primary span,
-  .nav-inner .btn-ghost span {
+  /* Browse button: hide text on mobile, keep icon */
+  .nav-browse-btn span {
     display: none;
   }
-
-  .nav-inner .btn-primary::before {
-    content: '+';
+  .nav-browse-btn::before {
+    content: '☰';
     font-size: 1.1rem;
   }
 
-  .nav-inner .btn-ghost:first-child::before {
-    content: '☰';
+  /* Share button: hide text on mobile, keep icon */
+  .nav-share-btn span {
+    display: none;
+  }
+  .nav-share-btn::before {
+    content: '+';
     font-size: 1.1rem;
   }
 
@@ -111,8 +114,35 @@ h1, h2, h3, h4 {
 
   /* Submit page: recipe fields grid stack on mobile */
   .recipe-fields-grid {
-    gridTemplateColumns: 1fr !important;
+    gridTemplateColumns: 1fr 1fr !important;
     gap: 8px !important;
+  }
+
+  .recipe-card-body {
+    padding: 16px !important;
+    gap: 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .recipe-card-body > div:first-child {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .recipe-card-body input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .recipe-card-body .input {
+    font-size: 0.875rem;
+  }
+
+  .recipe-card-body .branch-block {
+    padding: 12px !important;
   }
 
   /* Recipe grid: single column on very small screens */

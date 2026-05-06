@@ -74,7 +74,7 @@ interface EditableRecipe {
 type Step = "input" | "extracting" | "editing" | "submitting";
 
 export default function SubmitPage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const session = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<Step>("input");
@@ -99,28 +99,29 @@ export default function SubmitPage() {
       if (!res.ok) throw new Error(data.error || "Extraction failed");
 
       const extracted = data.recipes || [];
+      const isZh = locale === "zh";
       setRecipes(
         extracted.map((r: ExtractedRecipe, i: number) => ({
           id: `recipe-${Date.now()}-${i}`,
-          title: r.title,
+          title: isZh && r.title_cn ? r.title_cn : (r.title_en || r.title),
           title_en: r.title_en || "",
           title_cn: r.title_cn || "",
           ai_model: r.ai_model,
           bread_type: r.bread_type,
-          description: r.description || "",
+          description: isZh && r.description_cn ? r.description_cn : (r.description_en || r.description || ""),
           description_en: r.description_en || "",
           description_cn: r.description_cn || "",
           tags: r.tags || [],
           selected: true,
           branches: r.branches.map((b: ExtractedBranch, j: number) => ({
             id: `branch-${Date.now()}-${i}-${j}`,
-            title: b.title,
+            title: isZh && b.title_cn ? b.title_cn : (b.title_en || b.title),
             title_en: b.title_en || "",
             title_cn: b.title_cn || "",
-            notes: b.notes || "",
+            notes: isZh && b.notes_cn ? b.notes_cn : (b.notes_en || b.notes || ""),
             notes_en: b.notes_en || "",
             notes_cn: b.notes_cn || "",
-            final_recipe: b.final_recipe || "",
+            final_recipe: isZh && b.final_recipe_cn ? b.final_recipe_cn : (b.final_recipe_en || b.final_recipe || ""),
             final_recipe_en: b.final_recipe_en || "",
             final_recipe_cn: b.final_recipe_cn || "",
             sort_order: b.sort_order,
