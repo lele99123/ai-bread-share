@@ -82,33 +82,18 @@ h1, h2, h3, h4 {
     font-size: 1rem !important;
   }
 
-  .nav-inner .btn-primary,
-  .nav-inner .btn-ghost {
-    padding: 4px 6px;
-    font-size: 0.7rem;
+  /* Desktop-only elements (Browse, Share) hidden on mobile */
+  .desktop-only {
+    display: none !important;
   }
 
-  /* Browse button: hide text on mobile, keep icon */
-  .nav-browse-btn span {
-    display: none;
-  }
-  .nav-browse-btn::before {
-    content: '☰';
-    font-size: 1.1rem;
+  /* Mobile menu button — hidden on desktop */
+  .nav-menu-btn {
+    display: flex !important;
   }
 
-  /* Share button: hide text on mobile, keep icon */
-  .nav-share-btn span {
-    display: none;
-  }
-  .nav-share-btn::before {
-    content: '+';
-    font-size: 1.1rem;
-  }
-
-  /* Nav: hide email + signout on mobile */
-  .auth-email,
-  .auth-signout {
+  /* Nav: hide email on mobile */
+  .auth-email {
     display: none !important;
   }
 

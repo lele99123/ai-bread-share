@@ -4,7 +4,7 @@ import "./globals.css";
 import { LanguageProvider } from "@/lib/language";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { AuthProvider } from "@/lib/auth-provider";
-import { AuthButton } from "@/components/AuthButton";
+import { NavMenu } from "@/components/NavMenu";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -65,10 +65,10 @@ export default function RootLayout({
                 AI Bread <span>Share</span>
               </a>
               <div className="flex items-center gap-3">
-                <a href="/" className="btn-ghost nav-browse-btn" style={{ fontSize: '0.8125rem' }}><span>Browse</span></a>
-                <a href="/submit" className="btn-primary nav-share-btn"><span>Share a Recipe</span></a>
+                <a href="/" className="btn-ghost desktop-only" style={{ fontSize: '0.8125rem' }}>Browse</a>
+                <a href="/submit" className="btn-primary desktop-only">Share a Recipe</a>
                 <LanguageToggle />
-                <AuthButton />
+                <NavMenu />
               </div>
             </div>
           </nav>
