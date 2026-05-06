@@ -377,7 +377,53 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   </div>
                 )}
 
-                {/* Photo */}
+                {/* Photo upload — owner only, after creation */}
+                {session?.user?.id === recipe?.author_id && (
+                  <div style={{ marginBottom: "32px" }}>
+                    {!activeBranch.outcome_photo_url ? (
+                      <div>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-faint)", marginBottom: "8px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                          Add your photo
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id={`photo-upload-${activeBranch.id}`}
+                          style={{ display: "none" }}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const fd = new FormData();
+                            fd.append("branch_id", activeBranch.id);
+                            fd.append("photo", file);
+                            const res = await fetch("/api/upload-photo", { method: "POST", body: fd });
+                            if (res.ok) {
+                              const data = await res.json();
+                              setBranches((prev) =>
+                                prev.map((b) =>
+                                  b.id === activeBranch.id
+                                    ? { ...b, outcome_photo_url: data.outcome_photo_url }
+                                    : b
+                                )
+                              );
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={`photo-upload-${activeBranch.id}`}
+                          className="upload-zone"
+                          style={{ padding: "16px", cursor: "pointer" }}
+                        >
+                          <p style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Upload your bread photo</p>
+                        </label>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: "0.75rem", color: "var(--text-faint)", textAlign: "center", padding: "8px" }}>
+                        Photo uploaded
+                      </div>
+                    )}
+                  </div>
+                )}
                 {activeBranch.outcome_photo_url && (
                   <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)" }}>
                     <img
