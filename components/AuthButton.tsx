@@ -18,12 +18,12 @@ export function AuthButton() {
   if (session) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
+        <span className="auth-email" style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
           {session.user.email}
         </span>
         <button
           onClick={() => supabase.auth.signOut()}
-          className="btn-ghost"
+          className="btn-ghost auth-signout"
           style={{ fontSize: "0.8125rem", padding: "4px 10px" }}
         >
           Sign out
@@ -37,7 +37,7 @@ export function AuthButton() {
       <button
         onClick={() => setModalOpen(true)}
         className="btn-ghost"
-        style={{ fontSize: "0.8125rem", padding: "4px 10px" }}
+        style={{ fontSize: "0.8125rem", padding: "4px 6px" }}
       >
         Sign in
       </button>

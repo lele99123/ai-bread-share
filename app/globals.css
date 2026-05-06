@@ -103,6 +103,18 @@ h1, h2, h3, h4 {
     font-size: 1.1rem;
   }
 
+  /* Nav: hide email + signout on mobile */
+  .auth-email,
+  .auth-signout {
+    display: none !important;
+  }
+
+  /* Submit page: recipe fields grid stack on mobile */
+  .recipe-fields-grid {
+    gridTemplateColumns: 1fr !important;
+    gap: 8px !important;
+  }
+
   /* Recipe grid: single column on very small screens */
   .recipe-grid {
     grid-template-columns: 1fr !important;

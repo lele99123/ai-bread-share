@@ -359,7 +359,7 @@ export default function SubmitPage() {
 
                     {recipe.selected && (
                       <>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }} className="recipe-fields-grid">
                           <div>
                             <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.recipeTitle")}</label>
                             <input type="text" className="input" value={recipe.title} onChange={(e) => updateRecipeField(recipe.id, "title", e.target.value)} />
