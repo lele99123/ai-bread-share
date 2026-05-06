@@ -204,6 +204,7 @@ export default function SubmitPage() {
           .single();
 
         if (recipeErr || !recipeData) {
+          console.error("Recipe insert error:", recipeErr);
           throw new Error("Failed to insert recipe");
         }
 
@@ -402,21 +403,19 @@ export default function SubmitPage() {
 
                     {recipe.selected && (
                       <>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }} className="recipe-fields-grid">
-                          <div>
-                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.recipeTitle")}</label>
-                            <input type="text" className="input" value={recipe.title} onChange={(e) => updateRecipeField(recipe.id, "title", e.target.value)} />
-                          </div>
-                          <div>
-                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.model")}</label>
-                            <AIModelSelect value={recipe.ai_model} onChange={(v) => updateRecipeField(recipe.id, "ai_model", v)} />
-                          </div>
-                          <div>
-                            <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.type")}</label>
-                            <select className="input" value={recipe.bread_type} onChange={(e) => updateRecipeField(recipe.id, "bread_type", e.target.value)}>
-                              {BREAD_TYPES.map((t_) => <option key={t_} value={t_}>{t_}</option>)}
-                            </select>
-                          </div>
+                        <div style={{ marginBottom: "16px" }}>
+                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.recipeTitle")}</label>
+                          <input type="text" className="input" value={recipe.title} onChange={(e) => updateRecipeField(recipe.id, "title", e.target.value)} />
+                        </div>
+                        <div style={{ marginBottom: "16px" }}>
+                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.model")}</label>
+                          <AIModelSelect value={recipe.ai_model} onChange={(v) => updateRecipeField(recipe.id, "ai_model", v)} />
+                        </div>
+                        <div style={{ marginBottom: "16px" }}>
+                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.type")}</label>
+                          <select className="input" value={recipe.bread_type} onChange={(e) => updateRecipeField(recipe.id, "bread_type", e.target.value)}>
+                            {BREAD_TYPES.map((t_) => <option key={t_} value={t_}>{t_}</option>)}
+                          </select>
                         </div>
 
                         <div style={{ marginBottom: "16px" }}>

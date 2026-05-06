@@ -112,7 +112,7 @@ h1, h2, h3, h4 {
     display: none !important;
   }
 
-  /* Submit page: recipe fields grid stack on mobile */
+  /* Submit page: recipe fields stacked on mobile */
   .recipe-fields-grid {
     gridTemplateColumns: 1fr 1fr !important;
     gap: 8px !important;
