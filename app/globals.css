@@ -83,8 +83,10 @@ h1, h2, h3, h4 {
   }
 
   /* Desktop-only elements (Browse, Share) hidden on mobile */
-  .desktop-only {
-    display: none !important;
+  @media (max-width: 640px) {
+    .desktop-only {
+      display: none !important;
+    }
   }
 
   /* Mobile menu button — hidden on desktop */
