@@ -174,7 +174,7 @@ export default function Home() {
         display: 'flex', flexWrap: 'wrap', gap: '24px',
         marginBottom: '40px', paddingBottom: '24px',
         borderBottom: '1px solid var(--border)',
-      }}>
+      }} className="filter-row">
         <div>
           <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>{t("home.filterModel")}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -231,7 +231,7 @@ export default function Home() {
 
       {/* ── Grid ── */}
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }} className="recipe-grid">
           {[...Array(6)].map((_, i) => (
             <div key={i} style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)' }}>
               <div className="skeleton" style={{ height: '220px' }} />

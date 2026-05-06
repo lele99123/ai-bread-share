@@ -279,7 +279,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
         {/* Branch Tabs */}
         {branches.length > 0 && (
           <div style={{ marginBottom: "32px" }}>
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "24px", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "24px", paddingBottom: "16px", borderBottom: "1px solid var(--border)" }} className="branch-tabs">
               {branches.map((branch, idx) => (
                 <button
                   key={branch.id}
