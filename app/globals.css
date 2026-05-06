@@ -71,7 +71,7 @@ h1, h2, h3, h4 {
     max-width: 100% !important;
   }
 
-  /* Nav: collapse nav buttons to icon-only on mobile */
+  /* Nav: tighter spacing on mobile */
   .nav-inner {
     height: 52px;
     padding: 0 10px;
@@ -82,21 +82,41 @@ h1, h2, h3, h4 {
     font-size: 1rem !important;
   }
 
-  /* Desktop-only elements (Browse, Share) hidden on mobile */
-  @media (max-width: 640px) {
-    .desktop-only {
-      display: none !important;
-    }
+  /* Browse and Share buttons: smaller on mobile */
+  .nav-browse-btn,
+  .nav-share-btn {
+    padding: 4px 6px !important;
   }
 
-  /* Mobile menu button — hidden on desktop */
-  .nav-menu-btn {
-    display: flex !important;
+  .nav-browse-btn span,
+  .nav-share-btn span {
+    display: none;
+  }
+
+  .nav-browse-btn::before {
+    content: '☰';
+    font-size: 1rem;
+  }
+
+  .nav-share-btn::before {
+    content: '+';
+    font-size: 1rem;
   }
 
   /* Nav: hide email on mobile */
   .auth-email {
     display: none !important;
+  }
+
+  /* Mobile menu button — visible on mobile, hidden on desktop */
+  .nav-menu-btn {
+    display: flex !important;
+  }
+
+  @media (min-width: 641px) {
+    .nav-menu-btn {
+      display: none !important;
+    }
   }
 
   /* Submit page: recipe fields stacked on mobile */

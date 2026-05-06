@@ -65,8 +65,8 @@ export default function RootLayout({
                 AI Bread <span>Share</span>
               </a>
               <div className="flex items-center gap-3">
-                <a href="/" className="btn-ghost desktop-only" style={{ fontSize: '0.8125rem' }}>Browse</a>
-                <a href="/submit" className="btn-primary desktop-only">Share a Recipe</a>
+                <a href="/" className="btn-ghost nav-browse-btn" style={{ fontSize: '0.8125rem' }}><span>Browse</span></a>
+                <a href="/submit" className="btn-primary nav-share-btn"><span>Share a Recipe</span></a>
                 <LanguageToggle />
                 <NavMenu />
               </div>
