@@ -12,16 +12,28 @@ const BREAD_TYPES = ["Sweet", "Savory", "Sourdough", "Other"];
 
 interface ExtractedBranch {
   title: string;
+  title_en?: string;
+  title_cn?: string;
   notes?: string;
+  notes_en?: string;
+  notes_cn?: string;
   final_recipe?: string;
+  final_recipe_en?: string;
+  final_recipe_cn?: string;
   sort_order: number;
+  chat_line_start?: number;
+  chat_line_end?: number;
 }
 
 interface ExtractedRecipe {
   title: string;
+  title_en?: string;
+  title_cn?: string;
   ai_model: string;
   bread_type: string;
   description?: string;
+  description_en?: string;
+  description_cn?: string;
   tags?: string[];
   branches: ExtractedBranch[];
 }
@@ -29,8 +41,14 @@ interface ExtractedRecipe {
 interface EditableBranch {
   id: string;
   title: string;
+  title_en: string;
+  title_cn: string;
   notes: string;
+  notes_en: string;
+  notes_cn: string;
   final_recipe: string;
+  final_recipe_en: string;
+  final_recipe_cn: string;
   sort_order: number;
   chat_line_start: number | null;
   chat_line_end: number | null;
@@ -41,9 +59,13 @@ interface EditableBranch {
 interface EditableRecipe {
   id: string;
   title: string;
+  title_en: string;
+  title_cn: string;
   ai_model: string;
   bread_type: string;
   description: string;
+  description_en: string;
+  description_cn: string;
   tags: string[];
   branches: EditableBranch[];
   selected: boolean;
@@ -81,16 +103,26 @@ export default function SubmitPage() {
         extracted.map((r: ExtractedRecipe, i: number) => ({
           id: `recipe-${Date.now()}-${i}`,
           title: r.title,
+          title_en: r.title_en || "",
+          title_cn: r.title_cn || "",
           ai_model: r.ai_model,
           bread_type: r.bread_type,
           description: r.description || "",
+          description_en: r.description_en || "",
+          description_cn: r.description_cn || "",
           tags: r.tags || [],
           selected: true,
           branches: r.branches.map((b: ExtractedBranch, j: number) => ({
             id: `branch-${Date.now()}-${i}-${j}`,
             title: b.title,
+            title_en: b.title_en || "",
+            title_cn: b.title_cn || "",
             notes: b.notes || "",
+            notes_en: b.notes_en || "",
+            notes_cn: b.notes_cn || "",
             final_recipe: b.final_recipe || "",
+            final_recipe_en: b.final_recipe_en || "",
+            final_recipe_cn: b.final_recipe_cn || "",
             sort_order: b.sort_order,
             chat_line_start: (b as any).chat_line_start ?? null,
             chat_line_end: (b as any).chat_line_end ?? null,
@@ -156,9 +188,13 @@ export default function SubmitPage() {
           .from("recipes")
           .insert({
             title: recipe.title,
+            title_en: recipe.title_en || null,
+            title_cn: recipe.title_cn || null,
             ai_model: recipe.ai_model,
             bread_type: recipe.bread_type,
             description: recipe.description || null,
+            description_en: recipe.description_en || null,
+            description_cn: recipe.description_cn || null,
             chat_history: form.chat_history,
             author_name: form.author_name || session?.user?.email?.split("@")[0] || "Anonymous",
             author_id: session?.user?.id || null,
@@ -182,10 +218,16 @@ export default function SubmitPage() {
           await supabase.from("recipe_branches").insert({
             recipe_id: recipeData.id,
             title: branch.title,
+            title_en: branch.title_en || null,
+            title_cn: branch.title_cn || null,
             ai_model: recipe.ai_model,
             bread_type: recipe.bread_type,
             notes: branch.notes || null,
+            notes_en: branch.notes_en || null,
+            notes_cn: branch.notes_cn || null,
             final_recipe: branch.final_recipe || null,
+            final_recipe_en: branch.final_recipe_en || null,
+            final_recipe_cn: branch.final_recipe_cn || null,
             outcome_photo_url: photo_url,
             tags: recipe.tags,
             sort_order: branch.sort_order,

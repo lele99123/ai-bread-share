@@ -9,6 +9,16 @@ import { useLanguage } from "@/lib/language";
 import { useAuth } from "@/lib/auth-provider";
 import { AuthModal } from "@/components/AuthModal";
 
+function getLocalizedField<T>(item: T, locale: "en" | "zh", fieldEn: keyof T, fieldCn: keyof T, fieldFallback: keyof T): string {
+  if (locale === "zh") {
+    const cn = item[fieldCn] as string | null;
+    if (cn) return cn;
+  }
+  const en = item[fieldEn] as string | null;
+  if (en) return en;
+  return (item[fieldFallback] as string) || "";
+}
+
 function getModelClass(model: string): string {
   const m = model.toLowerCase();
   if (m.includes("gemini"))    return "gemini";
@@ -181,7 +191,7 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
 }
 
 export default function RecipePage({ params }: { params: Promise<{ id: string }> }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const session = useAuth();
   const [id, setId] = useState<string | null>(null);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -297,7 +307,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                       : { background: "transparent", color: "var(--text-muted)", borderColor: "var(--border)" }),
                   }}
                 >
-                  {branch.title}
+                  {getLocalizedField(branch, locale, "title_en", "title_cn", "title")}
                 </button>
               ))}
             </div>
@@ -341,13 +351,13 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   lineHeight: 1.2,
                   marginBottom: "24px",
                 }}>
-                  {activeBranch.title}
+                  {getLocalizedField(activeBranch, locale, "title_en", "title_cn", "title")}
                 </h1>
 
                 {/* Recipe description */}
-                {recipe.description && (
+                {getLocalizedField(recipe as any, locale, "description_en", "description_cn", "description") && (
                   <div style={{ marginBottom: "20px", padding: "14px 18px", background: "var(--bg-muted)", borderRadius: "8px", fontSize: "0.9375rem", color: "var(--text-muted)", fontStyle: "italic", borderLeft: "3px solid var(--accent)" }}>
-                    {recipe.description}
+                    {getLocalizedField(recipe as any, locale, "description_en", "description_cn", "description")}
                   </div>
                 )}
 
@@ -360,10 +370,10 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                 )}
 
                 {/* Branch notes */}
-                {activeBranch.notes && (
+                {getLocalizedField(activeBranch, locale, "notes_en", "notes_cn", "notes") && (
                   <div style={{ marginBottom: "20px", padding: "12px 16px", background: "var(--bg-muted)", borderRadius: "8px", fontSize: "0.875rem", color: "var(--text-muted)", borderLeft: "3px solid var(--border)" }}>
                     <span style={{ fontWeight: 600, color: "var(--text-faint)", display: "block", marginBottom: "2px", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>Baker&apos;s Notes</span>
-                    {activeBranch.notes}
+                    {getLocalizedField(activeBranch, locale, "notes_en", "notes_cn", "notes")}
                   </div>
                 )}
 
@@ -379,7 +389,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                 )}
 
                 {/* Recipe */}
-                {activeBranch.final_recipe && (
+                {(activeBranch.final_recipe || activeBranch.final_recipe_en || activeBranch.final_recipe_cn) && (
                   <div style={{ marginBottom: "40px" }}>
                     <h2 style={{
                       fontFamily: "var(--font-playfair), serif",
@@ -393,7 +403,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                     </h2>
                     <div className="card" style={{ padding: "24px 28px" }}>
                       <div className="prose-bread">
-                        <ReactMarkdown>{activeBranch.final_recipe}</ReactMarkdown>
+                        <ReactMarkdown>{getLocalizedField(activeBranch, locale, "final_recipe_en", "final_recipe_cn", "final_recipe")}</ReactMarkdown>
                       </div>
                     </div>
                   </div>

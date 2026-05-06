@@ -28,8 +28,18 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+function getLocalizedField<T>(item: T, locale: "en" | "zh", fieldEn: keyof T, fieldCn: keyof T, fieldFallback: keyof T): string {
+  if (locale === "zh") {
+    const cn = item[fieldCn] as string | null;
+    if (cn) return cn;
+  }
+  const en = item[fieldEn] as string | null;
+  if (en) return en;
+  return (item[fieldFallback] as string) || "";
+}
+
 function RecipeCard({ recipe }: { recipe: Recipe }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const modelClass = getModelClass(recipe.ai_model);
   const branchCount = recipe.branches?.length || 0;
   const branchWithPhoto = recipe.branches?.find((b) => b.outcome_photo_url);
@@ -91,7 +101,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           marginBottom: '6px',
           lineHeight: 1.3,
         }}>
-          {displayBranch?.title || recipe.title}
+          {getLocalizedField(displayBranch || recipe as any, locale, "title_en", "title_cn", "title")}
         </h3>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginBottom: '10px' }}>
           by {recipe.author_name}
@@ -114,7 +124,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 }
 
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedModel, setSelectedModel] = useState("All");
