@@ -74,13 +74,18 @@ h1, h2, h3, h4 {
   /* Nav: collapse nav buttons to icon-only on mobile */
   .nav-inner {
     height: 52px;
-    padding: 0 16px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .nav-logo {
+    font-size: 1.0625rem !important;
   }
 
   .nav-inner .btn-primary,
   .nav-inner .btn-ghost {
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    padding: 4px 6px;
+    font-size: 0.7rem;
   }
 
   .nav-inner .btn-primary span,
