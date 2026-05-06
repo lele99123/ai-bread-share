@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
+// Force dynamic — reads auth from cookie
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -9,6 +12,12 @@ export async function POST(req: NextRequest) {
 
     if (!branchId || !photo) {
       return NextResponse.json({ error: "Missing branch_id or photo" }, { status: 400 });
+    }
+
+    // Get session from cookie
+    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get branch to check ownership
@@ -20,6 +29,17 @@ export async function POST(req: NextRequest) {
 
     if (branchErr || !branch) {
       return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+    }
+
+    // Verify ownership: recipe author must be the logged-in user
+    const { data: recipe } = await supabase
+      .from("recipes")
+      .select("author_id")
+      .eq("id", branch.recipe_id)
+      .single();
+
+    if (!recipe || recipe.author_id !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Upload photo to storage
