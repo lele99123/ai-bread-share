@@ -418,13 +418,21 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                             }
                           }}
                         />
-                        <label
-                          htmlFor={`photo-upload-${activeBranch.id}`}
-                          className="upload-zone"
-                          style={{ padding: "20px", cursor: "pointer" }}
-                        >
-                          <p style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Upload your bread photo</p>
-                        </label>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          <label
+                            htmlFor={`photo-upload-${activeBranch.id}`}
+                            className="upload-zone"
+                            style={{ cursor: "pointer", display: "block" }}
+                          >
+                            <p style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Upload your bread photo</p>
+                          </label>
+                          <label
+                            htmlFor={`photo-upload-${activeBranch.id}`}
+                            style={{ cursor: "pointer", textAlign: "center", color: "var(--accent)", fontSize: "0.875rem", fontWeight: 600, padding: "8px" }}
+                          >
+                            or click here
+                          </label>
+                        </div>
                       </div>
                     ) : (
                       <div style={{ fontSize: "0.75rem", color: "var(--text-faint)", textAlign: "center", padding: "8px" }}>
