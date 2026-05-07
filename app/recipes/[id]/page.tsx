@@ -396,7 +396,13 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                             const fd = new FormData();
                             fd.append("branch_id", activeBranch.id);
                             fd.append("photo", file);
-                            const res = await fetch("/api/upload-photo", { method: "POST", body: fd });
+                            const res = await fetch("/api/upload-photo", {
+                              method: "POST",
+                              headers: {
+                                Authorization: `Bearer ${session.access_token}`,
+                              },
+                              body: fd,
+                            });
                             if (res.ok) {
                               const data = await res.json();
                               setBranches((prev) =>

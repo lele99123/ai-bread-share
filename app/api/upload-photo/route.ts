@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-// Force dynamic — reads auth from cookie
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
@@ -14,8 +13,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing branch_id or photo" }, { status: 400 });
     }
 
-    // Get session from cookie
-    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    // Use access token from Authorization header to validate session
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const token = authHeader.replace("Bearer ", "");
+
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
     if (authErr || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
