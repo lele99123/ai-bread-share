@@ -123,14 +123,13 @@ function ReviewSection({ branchId, recipeId, recipeAuthorId }: { branchId: strin
         updated_at: new Date().toISOString(),
       })
       .eq("id", reviewId)
-      .select()
-      .single();
+      .select();
     if (error) {
       alert("Failed to update review: " + error.message);
       return;
     }
-    if (data) {
-      setReviews((prev) => prev.map((r) => r.id === reviewId ? { ...r, ...data } as Review : r));
+    if (data && data.length > 0) {
+      setReviews((prev) => prev.map((r) => r.id === reviewId ? { ...r, ...data[0] } as Review : r));
       setEditingReviewId(null);
     }
   }
