@@ -406,13 +406,16 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                                     : b
                                 )
                               );
+                            } else {
+                              const data = await res.json();
+                              alert("Upload failed: " + (data.error || "Unknown error"));
                             }
                           }}
                         />
                         <label
                           htmlFor={`photo-upload-${activeBranch.id}`}
                           className="upload-zone"
-                          style={{ padding: "16px", cursor: "pointer" }}
+                          style={{ padding: "20px", cursor: "pointer" }}
                         >
                           <p style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>Upload your bread photo</p>
                         </label>

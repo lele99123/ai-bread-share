@@ -197,7 +197,7 @@ export default function SubmitPage() {
             description_en: recipe.description_en || null,
             description_cn: recipe.description_cn || null,
             chat_history: form.chat_history,
-            author_name: form.author_name || session?.user?.email?.split("@")[0] || "Anonymous",
+            author_name: form.author_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split("@")[0] || "Anonymous",
             author_id: session?.user?.id || null,
           })
           .select()
