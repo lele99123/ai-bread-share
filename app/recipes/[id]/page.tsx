@@ -56,12 +56,13 @@ function StarPicker({ value, onChange, label }: { value: number; onChange: (v: n
 }
 
 function getLocalizedReviewComment(review: Review, locale: "en" | "zh"): string {
-  if (locale === "zh" && review.comment_cn) return review.comment_cn;
-  if (review.comment_en) return review.comment_en;
-  return review.comment || "";
+  if (locale === "zh") {
+    return review.comment_cn || review.comment_en || review.comment || "";
+  }
+  return review.comment_en || review.comment || review.comment_cn || "";
 }
 
-function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeAuthorId: string | null }) {
+function ReviewSection({ branchId, recipeId, recipeAuthorId }: { branchId: string; recipeId: string; recipeAuthorId: string | null }) {
   const { t, locale } = useLanguage();
   const session = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -89,6 +90,7 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
       .from("reviews")
       .insert({
         branch_id: branchId,
+        recipe_id: recipeId,
         author_name: authorName,
         rating: reviewForm.taste_rating,
         accuracy_rating: reviewForm.accuracy_rating || null,
@@ -138,12 +140,11 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
     setEditForm({
       accuracy_rating: review.accuracy_rating || 0,
       taste_rating: review.rating,
-      comment: review.comment || "",
+      comment: getLocalizedReviewComment(review, locale),
     });
   }
 
   const avgTaste = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
-  const avgAccuracy = reviews.filter(r => r.accuracy_rating).reduce((s, r, _, arr) => s + (r.accuracy_rating || 0) / arr.length, 0);
 
   return (
     <div>
@@ -164,8 +165,8 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
           <div className="card" style={{ padding: "20px 24px" }}>
             <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "12px" }}>{t("recipe.leaveReview")}</p>
             <div style={{ marginBottom: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-              <StarPicker value={reviewForm.accuracy_rating} onChange={(r) => setReviewForm({ ...reviewForm, accuracy_rating: r })} label="Accuracy" />
-              <StarPicker value={reviewForm.taste_rating} onChange={(r) => setReviewForm({ ...reviewForm, taste_rating: r })} label="Taste" />
+              <StarPicker value={reviewForm.accuracy_rating} onChange={(r) => setReviewForm({ ...reviewForm, accuracy_rating: r })} label={t("recipe.accuracyRating")} />
+              <StarPicker value={reviewForm.taste_rating} onChange={(r) => setReviewForm({ ...reviewForm, taste_rating: r })} label={t("recipe.tasteRating")} />
             </div>
             <div style={{ marginBottom: "12px" }}>
               <textarea
@@ -205,10 +206,10 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
             <div key={review.id} style={{ padding: "16px 0", borderBottom: i < reviews.length - 1 ? "1px solid var(--border)" : "none" }}>
               {editingReviewId === review.id ? (
                 <div className="card" style={{ padding: "16px" }}>
-                  <p style={{ fontSize: "0.875rem", fontWeight: 600, marginBottom: "12px" }}>Edit Review</p>
+                  <p style={{ fontSize: "0.875rem", fontWeight: 600, marginBottom: "12px" }}>{t("recipe.editReview")}</p>
                   <div style={{ marginBottom: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <StarPicker value={editForm.accuracy_rating} onChange={(r) => setEditForm({ ...editForm, accuracy_rating: r })} label="Accuracy" />
-                    <StarPicker value={editForm.taste_rating} onChange={(r) => setEditForm({ ...editForm, taste_rating: r })} label="Taste" />
+                    <StarPicker value={editForm.accuracy_rating} onChange={(r) => setEditForm({ ...editForm, accuracy_rating: r })} label={t("recipe.accuracyRating")} />
+                    <StarPicker value={editForm.taste_rating} onChange={(r) => setEditForm({ ...editForm, taste_rating: r })} label={t("recipe.tasteRating")} />
                   </div>
                   <div style={{ marginBottom: "12px" }}>
                     <textarea
@@ -219,8 +220,8 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
                     />
                   </div>
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => saveEdit(review.id)} className="btn-primary" style={{ fontSize: "0.8rem", padding: "6px 14px" }}>Save</button>
-                    <button onClick={() => setEditingReviewId(null)} className="btn-ghost" style={{ fontSize: "0.8rem", padding: "6px 14px" }}>Cancel</button>
+                    <button onClick={() => saveEdit(review.id)} className="btn-primary" style={{ fontSize: "0.8rem", padding: "6px 14px" }}>{t("recipe.save")}</button>
+                    <button onClick={() => setEditingReviewId(null)} className="btn-ghost" style={{ fontSize: "0.8rem", padding: "6px 14px" }}>{t("recipe.cancel")}</button>
                   </div>
                 </div>
               ) : (
@@ -239,7 +240,7 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       {review.accuracy_rating && (
                         <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
-                          Acc: ★{review.accuracy_rating}
+                          {t("recipe.accuracyRating")}: ★{review.accuracy_rating}
                         </span>
                       )}
                       <span style={{ color: "#F59E0B", letterSpacing: "1px", fontSize: "0.875rem" }}>
@@ -247,7 +248,7 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
                       </span>
                       {session?.user?.id === review.author_id && (
                         <button onClick={() => startEdit(review)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: "0.75rem", padding: "2px 4px" }}>
-                          Edit
+                          {t("recipe.editReview")}
                         </button>
                       )}
                       <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
@@ -415,7 +416,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                         padding: 0, marginLeft: "4px",
                       }}
                     >
-                      View in chat
+                      {t("recipe.viewInChat")}
                     </button>
                   )}
                 </div>
@@ -554,7 +555,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   }}>
                     Reviews
                   </h2>
-                  <ReviewSection key={activeBranch.id} branchId={activeBranch.id} recipeAuthorId={recipe?.author_id || null} />
+                  <ReviewSection key={activeBranch.id} branchId={activeBranch.id} recipeId={recipe?.id || ""} recipeAuthorId={recipe?.author_id || null} />
                 </div>
               </div>
             )}

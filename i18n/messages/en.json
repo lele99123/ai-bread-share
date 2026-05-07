@@ -80,7 +80,13 @@
     "ownerBadge": "owner",
     "noReviews": "No reviews yet",
     "notFound": "Recipe not found",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "accuracyRating": "Accuracy",
+    "tasteRating": "Taste",
+    "editReview": "Edit Review",
+    "save": "Save",
+    "cancel": "Cancel",
+    "viewInChat": "View in chat"
   },
   "footer": {
     "tagline": "AI Bread Share — Where AI meets the perfect crumb"

@@ -80,7 +80,13 @@
     "ownerBadge": "作者",
     "noReviews": "暂无评价",
     "notFound": "食谱未找到",
-    "backHome": "返回首页"
+    "backHome": "返回首页",
+    "accuracyRating": "准确度",
+    "tasteRating": "味道",
+    "editReview": "编辑评价",
+    "save": "保存",
+    "cancel": "取消",
+    "viewInChat": "在对话中查看"
   },
   "footer": {
     "tagline": "AI Bread Share — 当 AI 遇见完美的面包屑"
