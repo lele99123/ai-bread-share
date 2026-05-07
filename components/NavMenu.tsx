@@ -8,7 +8,7 @@ import { AuthModal } from "./AuthModal";
 
 export function NavMenu() {
   const session = useAuth();
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -87,12 +87,48 @@ export function NavMenu() {
             {session ? (
               <>
                 <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
-                  <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "2px" }}>Signed in as</p>
+                  <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "2px" }}>{t("nav.signedInAs")}</p>
                   <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", wordBreak: "break-all" }}>
                     {session.user.email}
                   </p>
                 </div>
                 <div style={{ padding: "6px" }}>
+                  <Link
+                    href="/my-recipes"
+                    onClick={() => setOpen(false)}
+                    style={{
+                      display: "block",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "0.875rem",
+                      color: "var(--text)",
+                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-muted)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                  >
+                    {t("nav.myRecipes")}
+                  </Link>
+                  <Link
+                    href="/my-reviews"
+                    onClick={() => setOpen(false)}
+                    style={{
+                      display: "block",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "0.875rem",
+                      color: "var(--text)",
+                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-muted)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                  >
+                    {t("nav.myReviews")}
+                  </Link>
                   <button
                     onClick={() => { setOpen(false); handleSignOut(); }}
                     style={{
@@ -111,7 +147,7 @@ export function NavMenu() {
                     onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-muted)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                   >
-                    Sign out
+                    {t("nav.signOut")}
                   </button>
                 </div>
               </>
@@ -135,7 +171,7 @@ export function NavMenu() {
                   onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-muted)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                 >
-                  Sign in
+                  {t("nav.signIn")}
                 </button>
               </div>
             )}

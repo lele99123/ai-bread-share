@@ -1,7 +1,12 @@
 {
   "nav": {
     "browse": "Browse",
-    "share": "Share a Recipe"
+    "share": "Share a Recipe",
+    "myRecipes": "My Recipes",
+    "myReviews": "My Reviews",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "signedInAs": "Signed in as"
   },
   "home": {
     "label": "Community Recipes",
@@ -90,5 +95,23 @@
   },
   "footer": {
     "tagline": "AI Bread Share — Where AI meets the perfect crumb"
+  },
+  "myRecipes": {
+    "title": "My Recipes",
+    "signInToView": "Sign in to view your recipes",
+    "noRecipes": "You haven't shared any recipes yet",
+    "shareFirst": "Share your first recipe",
+    "recipe_one": "recipe",
+    "recipe_other": "recipes"
+  },
+  "myReviews": {
+    "title": "My Reviews",
+    "signInToView": "Sign in to view your reviews",
+    "noReviews": "You haven't reviewed any recipes yet",
+    "browseRecipes": "Browse recipes",
+    "review_one": "review",
+    "review_other": "reviews",
+    "viewRecipe": "View Recipe",
+    "recipe": "Recipe"
   }
 }

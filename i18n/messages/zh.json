@@ -1,7 +1,12 @@
 {
   "nav": {
     "browse": "浏览",
-    "share": "分享食谱"
+    "share": "分享食谱",
+    "myRecipes": "我的食谱",
+    "myReviews": "我的评价",
+    "signOut": "退出登录",
+    "signIn": "登录",
+    "signedInAs": "登录为"
   },
   "home": {
     "label": "社区食谱",
@@ -90,5 +95,23 @@
   },
   "footer": {
     "tagline": "AI Bread Share — 当 AI 遇见完美的面包屑"
+  },
+  "myRecipes": {
+    "title": "我的食谱",
+    "signInToView": "登录以查看你的食谱",
+    "noRecipes": "你还没有分享任何食谱",
+    "shareFirst": "分享你的第一个食谱",
+    "recipe_one": "个食谱",
+    "recipe_other": "个食谱"
+  },
+  "myReviews": {
+    "title": "我的评价",
+    "signInToView": "登录以查看你的评价",
+    "noReviews": "你还没有评价任何食谱",
+    "browseRecipes": "浏览食谱",
+    "review_one": "条评价",
+    "review_other": "条评价",
+    "viewRecipe": "查看食谱",
+    "recipe": "食谱"
   }
 }
