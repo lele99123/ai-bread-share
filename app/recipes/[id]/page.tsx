@@ -28,37 +28,48 @@ function getModelClass(model: string): string {
   return "other";
 }
 
-function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function StarPicker({ value, onChange, label }: { value: number; onChange: (v: number) => void; label?: string }) {
   return (
-    <div style={{ display: "flex", gap: "4px" }}>
-      {[1,2,3,4,5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onChange(n)}
-          style={{
-            fontSize: "1.5rem", background: "none", border: "none",
-            cursor: "pointer", padding: "2px", lineHeight: 1,
-            color: n <= value ? "#F59E0B" : "var(--border-dark)",
-            transition: "transform 0.1s ease",
-          }}
-          onMouseEnter={(e) => { if (n <= value) (e.currentTarget as HTMLElement).style.transform = "scale(1.2)"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
-        >
-          ★
-        </button>
-      ))}
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      {label && <span style={{ fontSize: "0.8rem", color: "var(--text-faint)", minWidth: "80px" }}>{label}</span>}
+      <div style={{ display: "flex", gap: "4px" }}>
+        {[1,2,3,4,5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            style={{
+              fontSize: "1.5rem", background: "none", border: "none",
+              cursor: "pointer", padding: "2px", lineHeight: 1,
+              color: n <= value ? "#F59E0B" : "var(--border-dark)",
+              transition: "transform 0.1s ease",
+            }}
+            onMouseEnter={(e) => { if (n <= value) (e.currentTarget as HTMLElement).style.transform = "scale(1.2)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
+          >
+            ★
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
+function getLocalizedReviewComment(review: Review, locale: "en" | "zh"): string {
+  if (locale === "zh" && review.comment_cn) return review.comment_cn;
+  if (review.comment_en) return review.comment_en;
+  return review.comment || "";
+}
+
 function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeAuthorId: string | null }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const session = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [reviewForm, setReviewForm] = useState({ author_name: "", rating: 0, comment: "" });
+  const [reviewForm, setReviewForm] = useState({ accuracy_rating: 0, taste_rating: 0, comment: "" });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ accuracy_rating: 0, taste_rating: 0, comment: "" });
 
   useEffect(() => {
     supabase
@@ -71,11 +82,20 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
 
   async function submitReview(e: React.FormEvent) {
     e.preventDefault();
-    if (reviewForm.rating === 0 || !session) return;
+    if (reviewForm.taste_rating === 0 || !session) return;
     setSubmitting(true);
+    const authorName = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "Anonymous";
     const { data, error } = await supabase
       .from("reviews")
-      .insert({ branch_id: branchId, author_name: reviewForm.author_name || session.user.email?.split("@")[0] || "Anonymous", rating: reviewForm.rating, comment: reviewForm.comment, author_id: session.user.id })
+      .insert({
+        branch_id: branchId,
+        author_name: authorName,
+        rating: reviewForm.taste_rating,
+        accuracy_rating: reviewForm.accuracy_rating || null,
+        comment: reviewForm.comment,
+        comment_en: reviewForm.comment,
+        author_id: session.user.id,
+      })
       .select()
       .single();
     setSubmitting(false);
@@ -85,18 +105,51 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
     }
     if (data) {
       setReviews([data as Review, ...reviews]);
-      setReviewForm({ author_name: "", rating: 0, comment: "" });
+      setReviewForm({ accuracy_rating: 0, taste_rating: 0, comment: "" });
       setSubmitted(true);
     }
   }
 
-  const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+  async function saveEdit(reviewId: string) {
+    const { data, error } = await supabase
+      .from("reviews")
+      .update({
+        rating: editForm.taste_rating,
+        accuracy_rating: editForm.accuracy_rating || null,
+        comment: editForm.comment,
+        comment_en: editForm.comment,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", reviewId)
+      .select()
+      .single();
+    if (error) {
+      alert("Failed to update review: " + error.message);
+      return;
+    }
+    if (data) {
+      setReviews((prev) => prev.map((r) => r.id === reviewId ? { ...r, ...data } as Review : r));
+      setEditingReviewId(null);
+    }
+  }
+
+  function startEdit(review: Review) {
+    setEditingReviewId(review.id);
+    setEditForm({
+      accuracy_rating: review.accuracy_rating || 0,
+      taste_rating: review.rating,
+      comment: review.comment || "",
+    });
+  }
+
+  const avgTaste = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+  const avgAccuracy = reviews.filter(r => r.accuracy_rating).reduce((s, r, _, arr) => s + (r.accuracy_rating || 0) / arr.length, 0);
 
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", padding: "12px 16px", background: "var(--bg-muted)", borderRadius: "8px" }}>
         <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-          {reviews.length === 0 ? t("recipe.noReviews") : `${reviews.length} review${reviews.length !== 1 ? "s" : ""} · ★ ${avgRating.toFixed(1)}`}
+          {reviews.length === 0 ? t("recipe.noReviews") : `${reviews.length} review${reviews.length !== 1 ? "s" : ""}`}
         </span>
       </div>
 
@@ -110,18 +163,9 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
         <form onSubmit={submitReview} style={{ marginBottom: "24px" }}>
           <div className="card" style={{ padding: "20px 24px" }}>
             <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)", marginBottom: "12px" }}>{t("recipe.leaveReview")}</p>
-            <div style={{ marginBottom: "12px" }}>
-              <p style={{ fontSize: "0.8rem", color: "var(--text-faint)", marginBottom: "6px" }}>{t("recipe.yourRating")}</p>
-              <StarPicker value={reviewForm.rating} onChange={(r) => setReviewForm({ ...reviewForm, rating: r })} />
-            </div>
-            <div style={{ marginBottom: "10px" }}>
-              <input
-                type="text"
-                className="input"
-                placeholder={t("recipe.yourNameOptional")}
-                value={reviewForm.author_name}
-                onChange={(e) => setReviewForm({ ...reviewForm, author_name: e.target.value })}
-              />
+            <div style={{ marginBottom: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <StarPicker value={reviewForm.accuracy_rating} onChange={(r) => setReviewForm({ ...reviewForm, accuracy_rating: r })} label="Accuracy" />
+              <StarPicker value={reviewForm.taste_rating} onChange={(r) => setReviewForm({ ...reviewForm, taste_rating: r })} label="Taste" />
             </div>
             <div style={{ marginBottom: "12px" }}>
               <textarea
@@ -134,7 +178,7 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
             </div>
             <button
               type="submit"
-              disabled={submitting || reviewForm.rating === 0}
+              disabled={submitting || reviewForm.taste_rating === 0}
               className="btn-primary"
               style={{ fontSize: "0.875rem", padding: "8px 18px" }}
             >
@@ -159,28 +203,62 @@ function ReviewSection({ branchId, recipeAuthorId }: { branchId: string; recipeA
         <div>
           {reviews.map((review, i) => (
             <div key={review.id} style={{ padding: "16px 0", borderBottom: i < reviews.length - 1 ? "1px solid var(--border)" : "none" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--text)" }}>
-                    {review.author_name || "Anonymous"}
-                  </span>
-                  {review.author_id === recipeAuthorId && session?.user?.id === recipeAuthorId && (
-                    <span style={{ fontSize: "0.7rem", background: "var(--accent-light)", color: "var(--accent-dark)", padding: "2px 6px", borderRadius: "4px", fontWeight: 600 }}>
-                      {t("recipe.ownerBadge")}
-                    </span>
+              {editingReviewId === review.id ? (
+                <div className="card" style={{ padding: "16px" }}>
+                  <p style={{ fontSize: "0.875rem", fontWeight: 600, marginBottom: "12px" }}>Edit Review</p>
+                  <div style={{ marginBottom: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <StarPicker value={editForm.accuracy_rating} onChange={(r) => setEditForm({ ...editForm, accuracy_rating: r })} label="Accuracy" />
+                    <StarPicker value={editForm.taste_rating} onChange={(r) => setEditForm({ ...editForm, taste_rating: r })} label="Taste" />
+                  </div>
+                  <div style={{ marginBottom: "12px" }}>
+                    <textarea
+                      className="input"
+                      rows={2}
+                      value={editForm.comment}
+                      onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })}
+                    />
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button onClick={() => saveEdit(review.id)} className="btn-primary" style={{ fontSize: "0.8rem", padding: "6px 14px" }}>Save</button>
+                    <button onClick={() => setEditingReviewId(null)} className="btn-ghost" style={{ fontSize: "0.8rem", padding: "6px 14px" }}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--text)" }}>
+                        {review.author_name || "Anonymous"}
+                      </span>
+                      {review.author_id === recipeAuthorId && session?.user?.id === recipeAuthorId && (
+                        <span style={{ fontSize: "0.7rem", background: "var(--accent-light)", color: "var(--accent-dark)", padding: "2px 6px", borderRadius: "4px", fontWeight: 600 }}>
+                          {t("recipe.ownerBadge")}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      {review.accuracy_rating && (
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
+                          Acc: ★{review.accuracy_rating}
+                        </span>
+                      )}
+                      <span style={{ color: "#F59E0B", letterSpacing: "1px", fontSize: "0.875rem" }}>
+                        {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                      </span>
+                      {session?.user?.id === review.author_id && (
+                        <button onClick={() => startEdit(review)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--accent)", fontSize: "0.75rem", padding: "2px 4px" }}>
+                          Edit
+                        </button>
+                      )}
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
+                        {review.updated_at ? new Date(review.updated_at).toLocaleDateString() : new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  {getLocalizedReviewComment(review, locale) && (
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>{getLocalizedReviewComment(review, locale)}</p>
                   )}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#F59E0B", letterSpacing: "1px", fontSize: "0.875rem" }}>
-                    {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
-                  </span>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-faint)" }}>
-                    {new Date(review.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-              {review.comment && (
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>{review.comment}</p>
+                </>
               )}
             </div>
           ))}

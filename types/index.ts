@@ -52,7 +52,11 @@ export interface Review {
   author_name: string;
   author_id: string | null;
   rating: number;
+  accuracy_rating: number | null;
   comment: string | null;
+  comment_en: string | null;
+  comment_cn: string | null;
   is_owner_review: boolean;
   created_at: string;
+  updated_at: string | null;
 }
