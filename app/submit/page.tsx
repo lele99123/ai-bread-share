@@ -213,9 +213,13 @@ export default function SubmitPage() {
           if (branch.photo) {
             const ext = branch.photo.name.split(".").pop();
             const fileName = `${Date.now()}-${Math.random()}.${ext}`;
-            await supabase.storage.from("outcome-photos").upload(fileName, branch.photo);
-            const { data: urlData } = supabase.storage.from("outcome-photos").getPublicUrl(fileName);
-            photo_url = urlData.publicUrl;
+            const { error: uploadErr } = await supabase.storage.from("outcome-photos").upload(fileName, branch.photo);
+            if (uploadErr) {
+              console.error("Photo upload failed:", uploadErr.message);
+            } else {
+              const { data: urlData } = supabase.storage.from("outcome-photos").getPublicUrl(fileName);
+              photo_url = urlData.publicUrl;
+            }
           }
           await supabase.from("recipe_branches").insert({
             recipe_id: recipeData.id,
