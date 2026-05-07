@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing branch_id or photo" }, { status: 400 });
     }
 
-    // Use access token from Authorization header to validate session
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,8 +25,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Create authenticated client using the user's token
+    const userSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
+    );
+
     // Get branch to check ownership
-    const { data: branch, error: branchErr } = await supabase
+    const { data: branch, error: branchErr } = await userSupabase
       .from("recipe_branches")
       .select("recipe_id, recipes!inner(author_id)")
       .eq("id", branchId)
@@ -37,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify ownership: recipe author must be the logged-in user
-    const { data: recipe } = await supabase
+    const { data: recipe } = await userSupabase
       .from("recipes")
       .select("author_id")
       .eq("id", branch.recipe_id)
@@ -50,7 +57,7 @@ export async function POST(req: NextRequest) {
     // Upload photo to storage
     const ext = photo.name.split(".").pop();
     const fileName = `${Date.now()}-${Math.random()}.${ext}`;
-    const { error: uploadErr } = await supabase.storage
+    const { error: uploadErr } = await userSupabase.storage
       .from("outcome-photos")
       .upload(fileName, photo);
 
@@ -58,10 +65,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Upload failed: " + uploadErr.message }, { status: 500 });
     }
 
-    const { data: urlData } = supabase.storage.from("outcome-photos").getPublicUrl(fileName);
+    const { data: urlData } = userSupabase.storage.from("outcome-photos").getPublicUrl(fileName);
 
     // Update branch with photo URL
-    const { error: updateErr } = await supabase
+    const { error: updateErr } = await userSupabase
       .from("recipe_branches")
       .update({ outcome_photo_url: urlData.publicUrl })
       .eq("id", branchId);
