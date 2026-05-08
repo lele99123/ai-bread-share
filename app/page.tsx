@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { Recipe } from "@/types";
 import { useLanguage } from "@/lib/language";
@@ -50,13 +51,12 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
       {/* Photo */}
       <div style={{ height: '220px', background: 'var(--bg-muted)', position: 'relative', overflow: 'hidden' }}>
         {displayBranch?.outcome_photo_url ? (
-          <img
+          <Image
             src={displayBranch.outcome_photo_url}
             alt={displayBranch.title}
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover',
-              transition: 'transform 0.3s ease',
-            }}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            style={{ objectFit: 'cover', transition: 'transform 0.3s ease' }}
             className="group-hover:scale-105"
           />
         ) : (

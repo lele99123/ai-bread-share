@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/supabase";
 import { Recipe, RecipeBranch, Review } from "@/types";
@@ -534,11 +535,13 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   </div>
                 )}
                 {activeBranch.outcome_photo_url && (
-                  <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)" }}>
-                    <img
+                  <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)", height: "420px", position: "relative" }}>
+                    <Image
                       src={activeBranch.outcome_photo_url}
                       alt={activeBranch.title}
-                      style={{ width: "100%", maxHeight: "420px", objectFit: "cover", display: "block" }}
+                      fill
+                      sizes="(max-width: 760px) 100vw, 760px"
+                      style={{ objectFit: "cover" }}
                     />
                   </div>
                 )}
@@ -606,7 +609,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                 <Link key={rec.id} href={`/recipes/${rec.id}`} className="card" style={{ textDecoration: "none" }}>
                   <div style={{ height: "120px", background: "var(--bg-muted)", overflow: "hidden" }}>
                     {rec.outcome_photo_url ? (
-                      <img src={rec.outcome_photo_url} alt={rec.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <Image src={rec.outcome_photo_url} alt={rec.title} fill sizes="200px" style={{ objectFit: "cover" }} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <svg width="32" height="32" viewBox="0 0 56 56" fill="none" style={{ opacity: 0.2 }}>
