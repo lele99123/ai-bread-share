@@ -535,13 +535,14 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   </div>
                 )}
                 {activeBranch.outcome_photo_url && (
-                  <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)", height: "420px", position: "relative" }}>
+                  <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)", maxHeight: "420px" }}>
                     <Image
                       src={activeBranch.outcome_photo_url}
                       alt={activeBranch.title}
-                      fill
-                      sizes="(max-width: 760px) 100vw, 760px"
-                      style={{ objectFit: "cover" }}
+                      width={760}
+                      height={420}
+                      style={{ width: "100%", height: "auto", maxHeight: "420px", objectFit: "cover", display: "block" }}
+                      priority
                     />
                   </div>
                 )}
