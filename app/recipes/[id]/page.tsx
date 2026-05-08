@@ -608,7 +608,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px" }}>
               {recommendations.map(rec => (
                 <Link key={rec.id} href={`/recipes/${rec.id}`} className="card" style={{ textDecoration: "none" }}>
-                  <div style={{ height: "120px", background: "var(--bg-muted)", overflow: "hidden" }}>
+                  <div style={{ height: "120px", background: "var(--bg-muted)", overflow: "hidden", position: "relative" }}>
                     {rec.outcome_photo_url ? (
                       <Image src={rec.outcome_photo_url} alt={rec.title} fill sizes="200px" style={{ objectFit: "cover" }} />
                     ) : (
