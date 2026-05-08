@@ -123,15 +123,28 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function Home() {
   const { t, locale } = useLanguage();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [selectedModel, setSelectedModel] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
+  const [offset, setOffset] = useState(0);
 
-  useEffect(() => {
-    supabase
+  function fetchRecipes(resetOffset = true) {
+    const newOffset = resetOffset ? 0 : offset;
+    if (resetOffset) {
+      setOffset(0);
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    let query = supabase
       .from("recipes")
       .select(`
         *,
@@ -139,30 +152,54 @@ export default function Home() {
           *,
           reviews (rating)
         )
-      `)
+      `, { count: "exact" })
       .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setRecipes(data.map((r: any) => {
-            const branches = (r.recipe_branches || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
-            const enriched = branches.map((b: any) => {
-              const reviews = b.reviews || [];
-              const avg = reviews.length ? reviews.reduce((s: number, rv: any) => s + rv.rating, 0) / reviews.length : 0;
-              return { ...b, avg_rating: avg, review_count: reviews.length };
-            });
-            return { ...r, branches: enriched };
-          }));
-        }
-        setLoading(false);
-      });
-  }, []);
+      .range(newOffset, newOffset + PAGE_SIZE - 1);
 
-  const filtered = recipes.filter((r) => {
-    const primary = r.branches?.[0];
-    if (selectedModel !== "All" && primary && !primary.ai_model.toLowerCase().includes(selectedModel.toLowerCase())) return false;
-    if (selectedType !== "All" && primary && primary.bread_type !== selectedType) return false;
-    return true;
-  });
+    if (selectedModel !== "All") {
+      query = query.ilike("ai_model", `%${selectedModel}%`);
+    }
+
+    query.then(({ data, error, count }) => {
+      if (!error && data) {
+        const mapped = data.map((r: any) => {
+          const branches = (r.recipe_branches || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
+          const enriched = branches.map((b: any) => {
+            const reviews = b.reviews || [];
+            const avg = reviews.length ? reviews.reduce((s: number, rv: any) => s + rv.rating, 0) / reviews.length : 0;
+            return { ...b, avg_rating: avg, review_count: reviews.length };
+          });
+          return { ...r, branches: enriched };
+        });
+
+        const clientFiltered = selectedType === "All"
+          ? mapped
+          : mapped.filter((r) => r.branches?.[0]?.bread_type === selectedType);
+
+        if (resetOffset) {
+          setRecipes(clientFiltered);
+        } else {
+          setRecipes((prev) => [...prev, ...clientFiltered]);
+        }
+        setHasMore((count || 0) > newOffset + PAGE_SIZE);
+      }
+      setLoading(false);
+      setLoadingMore(false);
+    });
+  }
+
+  useEffect(() => {
+    fetchRecipes(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedModel, selectedType]);
+
+  function loadMore() {
+    const newOffset = offset + PAGE_SIZE;
+    setOffset(newOffset);
+    fetchRecipes(false);
+  }
+
+  const filtered = recipes;
 
   return (
     <div className="container" style={{ paddingTop: '48px', paddingBottom: '64px' }}>
@@ -273,6 +310,19 @@ export default function Home() {
           {filtered.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
+        </div>
+      )}
+
+      {hasMore && (
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="btn-ghost"
+            style={{ padding: '10px 28px' }}
+          >
+            {loadingMore ? 'Loading...' : 'Load more'}
+          </button>
         </div>
       )}
     </div>
