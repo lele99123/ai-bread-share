@@ -343,8 +343,30 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   const activeBranch = branches[activeBranchIdx] || branches[0];
   const activeModelClass = activeBranch ? getModelClass(activeBranch.ai_model) : "other";
 
+  const schemaOrg = activeBranch ? {
+    "@context": "https://schema.org/",
+    "@type": "Recipe",
+    "name": getLocalizedField(activeBranch, locale, "title_en", "title_cn", "title"),
+    "description": recipe.description_en || recipe.description || "",
+    "author": { "@type": "Person", "name": recipe.author_name },
+    "datePublished": recipe.created_at,
+    "recipeIngredient": [],
+    "recipeInstructions": [{ "@type": "HowToStep", "text": getLocalizedField(activeBranch, locale, "final_recipe_en", "final_recipe_cn", "final_recipe") || "" }],
+    "aggregateRating": activeBranch.avg_rating ? {
+      "@type": "AggregateRating",
+      "ratingValue": activeBranch.avg_rating.toFixed(1),
+      "reviewCount": activeBranch.review_count || 0,
+    } : undefined,
+  } : null;
+
   return (
     <div className="container" style={{ paddingTop: "40px", paddingBottom: "80px" }}>
+      {schemaOrg && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+        />
+      )}
       <div style={{ maxWidth: "760px", margin: "0 auto" }}>
 
         <Link href="/" style={{

@@ -24,12 +24,20 @@ export const metadata: Metadata = {
   description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
   keywords: ["bread recipes", "AI baking", " sourdough", "homemade bread", "bread machine recipes"],
   authors: [{ name: "AI Bread Share" }],
+  alternates: {
+    canonical: "https://ai-bread-share.vercel.app",
+    languages: {
+      "en": "https://ai-bread-share.vercel.app",
+      "zh": "https://ai-bread-share.vercel.app?lang=zh",
+    },
+  },
   openGraph: {
     title: "AI Bread Share",
     description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
     url: "https://ai-bread-share.vercel.app",
     siteName: "AI Bread Share",
     locale: "en_US",
+    alternateLocale: "zh_CN",
     type: "website",
   },
   twitter: {
