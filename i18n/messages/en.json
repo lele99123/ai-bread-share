@@ -6,7 +6,8 @@
     "myReviews": "My Reviews",
     "signOut": "Sign out",
     "signIn": "Sign in",
-    "signedInAs": "Signed in as"
+    "signedInAs": "Signed in as",
+    "benchmark": "Benchmark"
   },
   "home": {
     "label": "Community Recipes",
@@ -24,7 +25,7 @@
   "submit": {
     "label": "Share with the community",
     "title": "Submit Recipes",
-    "description": "Paste your AI conversation. We'll find every distinct recipe discussed — each becomes its own post.",
+    "description": "Description",
     "yourName": "Your Name",
     "namePlaceholder": "Anonymous",
     "conversation": "AI Conversation *",
@@ -41,7 +42,6 @@
     "recipeTitle": "Recipe Title",
     "model": "AI Model",
     "type": "Type",
-    "description": "Description",
     "descriptionPlaceholder": "Brief description of this bread",
     "branchesTitle": "Branches — iterations of this recipe",
     "branchTitle": "Branch Title",
@@ -83,7 +83,6 @@
     "thanksReview": "Thanks for your review!",
     "beFirstReview": "Be the first to review this branch.",
     "ownerBadge": "owner",
-    "noReviews": "No reviews yet",
     "notFound": "Recipe not found",
     "backHome": "Back to home",
     "accuracyRating": "Accuracy",

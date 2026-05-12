@@ -6,7 +6,8 @@
     "myReviews": "我的评价",
     "signOut": "退出登录",
     "signIn": "登录",
-    "signedInAs": "登录为"
+    "signedInAs": "登录为",
+    "benchmark": "Benchmark"
   },
   "home": {
     "label": "社区食谱",
@@ -24,7 +25,7 @@
   "submit": {
     "label": "分享给社区",
     "title": "提交食谱",
-    "description": "粘贴你的 AI 对话。我们会找出其中讨论的每一份独特食谱——每份都成为独立的帖子。",
+    "description": "描述",
     "yourName": "你的名字",
     "namePlaceholder": "匿名",
     "conversation": "AI 对话 *",
@@ -41,7 +42,6 @@
     "recipeTitle": "食谱标题",
     "model": "AI 模型",
     "type": "类型",
-    "description": "描述",
     "descriptionPlaceholder": "简要描述这个面包",
     "branchesTitle": "分支 — 这个食谱的不同版本",
     "branchTitle": "分支标题",
@@ -83,7 +83,6 @@
     "thanksReview": "感谢你的评价！",
     "beFirstReview": "成为第一个评价这个分支的人。",
     "ownerBadge": "作者",
-    "noReviews": "暂无评价",
     "notFound": "食谱未找到",
     "backHome": "返回首页",
     "accuracyRating": "准确度",

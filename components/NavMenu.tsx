@@ -13,7 +13,6 @@ export function NavMenu() {
   const [authOpen, setAuthOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -24,7 +23,6 @@ export function NavMenu() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Close on ESC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -41,7 +39,6 @@ export function NavMenu() {
 
   return (
     <>
-      {/* Mobile menu button */}
       <button
         onClick={() => setOpen(!open)}
         className="nav-menu-btn btn-ghost"
@@ -54,10 +51,8 @@ export function NavMenu() {
         {open ? "✕" : "☰"}
       </button>
 
-      {/* Dropdown overlay */}
       {open && (
         <>
-          {/* Backdrop */}
           <div
             style={{
               position: "fixed",
@@ -67,7 +62,6 @@ export function NavMenu() {
             }}
             onClick={() => setOpen(false)}
           />
-          {/* Menu panel */}
           <div
             ref={ref}
             style={{
@@ -128,6 +122,24 @@ export function NavMenu() {
                     onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                   >
                     {t("nav.myReviews")}
+                  </Link>
+                  <Link
+                    href="/benchmark"
+                    onClick={() => setOpen(false)}
+                    style={{
+                      display: "block",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "0.875rem",
+                      color: "var(--text)",
+                      fontFamily: "var(--font-dm-sans), sans-serif",
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-muted)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                  >
+                    {t("nav.benchmark")}
                   </Link>
                   <button
                     onClick={() => { setOpen(false); handleSignOut(); }}
