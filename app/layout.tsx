@@ -68,30 +68,33 @@ export default function RootLayout({
         <LanguageProvider>
           <AuthProvider>
             <nav className="nav">
-            <div className="nav-inner">
-              <a href="/" className="nav-logo">
-                AI Bread <span>Share</span>
-              </a>
-              <div className="flex items-center gap-3">
-                <a href="/" className="btn-ghost nav-browse-btn" style={{ fontSize: '0.8125rem' }}><span>Browse</span></a>
-                <a href="/submit" className="btn-primary nav-share-btn"><span>Share a Recipe</span></a>
-                <LanguageToggle />
-                <NavMenu />
+              <div className="nav-inner">
+                <a href="/" className="nav-logo">
+                  AI Bread <span>Share</span>
+                </a>
+                <div className="flex items-center gap-3">
+                  <a href="/" className="btn-ghost nav-browse-btn" style={{ fontSize: '0.8125rem' }}><span>Browse</span></a>
+                  <a href="/benchmark" className="btn-ghost" style={{ fontSize: '0.8125rem' }}>
+                    <span>Model Benchmark</span>
+                  </a>
+                  <a href="/submit" className="btn-primary nav-share-btn"><span>Share a Recipe</span></a>
+                  <LanguageToggle />
+                  <NavMenu />
+                </div>
               </div>
-            </div>
-          </nav>
+            </nav>
 
-          <main className="flex-1">
-            {children}
-          </main>
+            <main className="flex-1">
+              {children}
+            </main>
 
-          <footer className="footer">
-            <div className="container">
-              <p>AI Bread Share &mdash; Where AI meets the perfect crumb</p>
-            </div>
-          </footer>
-        </AuthProvider>
-          </LanguageProvider>
+            <footer className="footer">
+              <div className="container">
+                <p>AI Bread Share &mdash; Where AI meets the perfect crumb</p>
+              </div>
+            </footer>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -57,7 +57,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.25 }}>
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" style={{ opacity: 0.25 }}>
               <ellipse cx="28" cy="38" rx="22" ry="12" fill="var(--text)"/>
               <ellipse cx="28" cy="30" rx="18" ry="9" fill="var(--text)"/>
               <ellipse cx="28" cy="23" rx="14" ry="7" fill="var(--text)"/>
@@ -105,7 +105,9 @@ export default function MyRecipes() {
   const session = useAuth();
   const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [unclaimedCount, setUnclaimedCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
@@ -115,19 +117,61 @@ export default function MyRecipes() {
     }
     if (!session.user?.id) return;
 
-    supabase
-      .from("recipes")
-      .select(`
-        *,
-        recipe_branches (
-          *,
-          reviews (rating)
-        )
-      `)
-      .eq("author_id", session.user.id)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) {
+    const userId = session.user.id;
+    const userEmail = session.user.email || "";
+    const userName = session.user.user_metadata?.full_name || userEmail.split("@")[0];
+
+    Promise.all([
+      // Owned recipes
+      supabase
+        .from("recipes")
+        .select(`*, recipe_branches (*, reviews (rating))`)
+        .eq("author_id", userId)
+        .order("created_at", { ascending: false }),
+      // Unclaimed recipes by same author_name
+      supabase
+        .from("recipes")
+        .select("id")
+        .eq("author_name", userName)
+        .is("author_id", null),
+    ]).then(([{ data, error }, { data: unclaimedData }]) => {
+      if (!error && data) {
+        setRecipes(data.map((r: any) => {
+          const branches = (r.recipe_branches || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
+          const enriched = branches.map((b: any) => {
+            const reviews = b.reviews || [];
+            const avg = reviews.length ? reviews.reduce((s: number, rv: any) => s + rv.rating, 0) / reviews.length : 0;
+            return { ...b, reviews: [], avg_rating: avg, review_count: reviews.length };
+          });
+          return { ...r, branches: enriched } as Recipe;
+        }));
+      }
+      setUnclaimedCount(unclaimedData?.length || 0);
+      setLoading(false);
+    });
+  }, [session]);
+
+  async function claimOldRecipes() {
+    if (!session || claiming) return;
+    const userName = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "";
+    setClaiming(true);
+
+    try {
+      const res = await fetch("/api/claim-ownership", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author_name: userName, user_id: session.user.id }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setUnclaimedCount(0);
+        // Refresh owned recipes
+        const { data } = await supabase
+          .from("recipes")
+          .select(`*, recipe_branches (*, reviews (rating))`)
+          .eq("author_id", session.user.id)
+          .order("created_at", { ascending: false });
+        if (data) {
           setRecipes(data.map((r: any) => {
             const branches = (r.recipe_branches || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
             const enriched = branches.map((b: any) => {
@@ -138,9 +182,12 @@ export default function MyRecipes() {
             return { ...r, branches: enriched } as Recipe;
           }));
         }
-        setLoading(false);
-      });
-  }, [session]);
+      }
+    } catch (err) {
+      console.error("Claim failed:", err);
+    }
+    setClaiming(false);
+  }
 
   if (!session) {
     return (
@@ -165,13 +212,56 @@ export default function MyRecipes() {
           </p>
         </div>
 
+        {/* Claim ownership banner */}
+        {unclaimedCount > 0 && (
+          <div style={{
+            background: "linear-gradient(135deg, #FEF3C7, #FDE68A)",
+            border: "1px solid #F59E0B",
+            borderRadius: "12px",
+            padding: "16px 20px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}>
+            <div>
+              <p style={{ fontWeight: 600, color: "#92400E", marginBottom: "2px" }}>
+                {locale === "zh"
+                  ? `你有 ${unclaimedCount} 个旧食谱尚未认领`
+                  : `You have ${unclaimedCount} anonymous recipe${unclaimedCount > 1 ? "s" : ""} to claim`}
+              </p>
+              <p style={{ fontSize: "0.8rem", color: "#B45309", margin: 0 }}>
+                {locale === "zh"
+                  ? "点击按钮将它们关联到你的账户"
+                  : "Claim them to manage them under your account"}
+              </p>
+            </div>
+            <button
+              onClick={claimOldRecipes}
+              disabled={claiming}
+              style={{
+                background: "#F59E0B", color: "white",
+                border: "none", borderRadius: "8px",
+                padding: "10px 20px", fontWeight: 600,
+                cursor: claiming ? "not-allowed" : "pointer",
+                opacity: claiming ? 0.7 : 1,
+                fontSize: "0.875rem",
+              }}
+            >
+              {claiming ? (locale === "zh" ? "认领中..." : "Claiming...") : (locale === "zh" ? `认领 ${unclaimedCount} 个` : `Claim ${unclaimedCount}`)}
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
             {[1,2,3].map((i) => (
               <div key={i} className="skeleton" style={{ height: "320px", borderRadius: "12px" }} />
             ))}
           </div>
-        ) : recipes.length === 0 ? (
+        ) : recipes.length === 0 && unclaimedCount === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-faint)" }}>
             <p style={{ fontSize: "1rem", marginBottom: "16px" }}>{t("myRecipes.noRecipes")}</p>
             <Link href="/submit" className="btn-primary">{t("myRecipes.shareFirst")}</Link>
