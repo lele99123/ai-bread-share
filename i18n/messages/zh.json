@@ -112,5 +112,9 @@
     "review_other": "条评价",
     "viewRecipe": "查看食谱",
     "recipe": "食谱"
+  },
+  "photo": {
+    "replace": "Replace photo",
+    "uploading": "Uploading..."
   }
 }

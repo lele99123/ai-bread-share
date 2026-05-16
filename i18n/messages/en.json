@@ -112,5 +112,9 @@
     "review_other": "reviews",
     "viewRecipe": "View Recipe",
     "recipe": "Recipe"
+  },
+  "photo": {
+    "replace": "Replace photo",
+    "uploading": "Uploading..."
   }
 }

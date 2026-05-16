@@ -494,6 +494,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
+                            if (file.size > 4 * 1024 * 1024) { alert("Photo is too large. Maximum size is 4MB."); return; }
                             const fd = new FormData();
                             fd.append("branch_id", activeBranch.id);
                             fd.append("photo", file);
@@ -514,8 +515,10 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                                 )
                               );
                             } else {
-                              const data = await res.json();
-                              alert("Upload failed: " + (data.error || "Unknown error"));
+                              const text = await res.text();
+                              let msg = "Upload failed. Please try again.";
+                              try { const j = JSON.parse(text); msg = j.error || msg; } catch {}
+                              alert(msg);
                             }
                           }}
                         />
@@ -538,7 +541,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)", maxHeight: "420px" }}>
                     <Image
                       src={activeBranch.outcome_photo_url}
-                      alt={activeBranch.title}
+                      alt={activeBranch.title || "Bread photo"}
                       width={760}
                       height={420}
                       style={{ width: "100%", height: "auto", maxHeight: "420px", objectFit: "cover", display: "block" }}
