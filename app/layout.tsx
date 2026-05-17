@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://aibreadshare.com/_next/image?url=https%3A%2F%2Fdjcpleqluujwwdiywcgh.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Foutcome-photos%2F1777911666236-0.9216136040152082.jpg&w=1080&q=75",
-        width: 1080,
-        height: 1080,
+        url: "/og-image.jpg",
+        width: 630,
+        height: 420,
         alt: "AI Bread Share — Community Recipes",
       },
     ],
@@ -53,7 +53,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AI Bread Share",
     description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
-    images: ["https://aibreadshare.com/_next/image?url=https%3A%2F%2Fdjcpleqluujwwdiywcgh.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Foutcome-photos%2F1777911666236-0.9216136040152082.jpg&w=1080&q=75"],
+    images: ["/og-image.jpg"],
+  },
+  icons: {
+    icon: "/favicon.png",
+    apple: "/apple-touch-icon.png",
   },
   robots: {
     index: true,
