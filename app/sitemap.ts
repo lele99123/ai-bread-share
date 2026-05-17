@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://ai-bread-share.vercel.app";
+  const baseUrl = "https://aibreadshare.com";
 
   // Fetch all recipe IDs for static generation
   const { data: recipes } = await supabase.from("recipes").select("id, updated_at");

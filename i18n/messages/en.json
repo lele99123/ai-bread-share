@@ -20,7 +20,9 @@
     "firstToShare": "Be the first to share an AI bread conversation.",
     "shareBtn": "Share a Recipe",
     "noReviews": "No reviews yet",
-    "variants": "variants"
+    "variants": "variants",
+    "searchPlaceholder": "Search recipes by name or description...",
+    "searchResults": "Showing results for \"{query}\""
   },
   "submit": {
     "label": "Share with the community",

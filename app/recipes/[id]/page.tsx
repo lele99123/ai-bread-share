@@ -281,6 +281,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [chatCollapsed, setChatCollapsed] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   useEffect(() => {
     const handler = () => setModalOpen(true);
@@ -441,6 +442,27 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                       {t("recipe.viewInChat")}
                     </button>
                   )}
+                  {/* Share buttons */}
+                  <div style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
+                    <button
+                      onClick={() => {
+                        if (navigator.share) {
+                          navigator.share({ title: activeBranch.title || recipe.title, url: window.location.href });
+                        } else {
+                          navigator.clipboard.writeText(window.location.href);
+                          alert("Link copied to clipboard!");
+                        }
+                      }}
+                      style={{
+                        background: "var(--bg-muted)", border: "1px solid var(--border)", borderRadius: "6px",
+                        padding: "5px 10px", cursor: "pointer", fontSize: "0.75rem", color: "var(--text-muted)",
+                        display: "flex", alignItems: "center", gap: "4px",
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 8a2 2 0 104-2 2 2 0 00-4 2zm8-2a2 2 0 10-4 2 2 2 0 004-2zm0 6a2 2 0 10-4 2 2 2 0 004-2z" fill="currentColor"/></svg>
+                      Share
+                    </button>
+                  </div>
                 </div>
 
                 {/* Branch title */}
@@ -538,7 +560,7 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                   </div>
                 )}
                 {activeBranch.outcome_photo_url && (
-                  <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)", maxHeight: "420px" }}>
+                  <div style={{ borderRadius: "14px", overflow: "hidden", marginBottom: "32px", border: "1px solid var(--border)", maxHeight: "420px", cursor: "zoom-in" }} onClick={() => setLightboxSrc(activeBranch.outcome_photo_url)}>
                     <Image
                       src={activeBranch.outcome_photo_url}
                       alt={activeBranch.title || "Bread photo"}
@@ -546,6 +568,32 @@ export default function RecipePage({ params }: { params: Promise<{ id: string }>
                       height={420}
                       style={{ width: "100%", height: "auto", maxHeight: "420px", objectFit: "cover", display: "block" }}
                       priority
+                    />
+                    <div style={{ background: "var(--bg-muted)", padding: "6px 12px", fontSize: "0.75rem", color: "var(--text-faint)", display: "flex", alignItems: "center", gap: "4px" }}>
+                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3a5 5 0 100 10A5 5 0 008 3zm0 8.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7zm.5-5.5v3.5l2.5 1.5-.75 1.25-2.75-1.75V6.5H8.5z" fill="currentColor"/></svg>
+                      Click to enlarge
+                    </div>
+                  </div>
+                )}
+
+                {/* Lightbox */}
+                {lightboxSrc && (
+                  <div
+                    style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}
+                    onClick={() => setLightboxSrc(null)}
+                  >
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setLightboxSrc(null); }}
+                      style={{ position: "absolute", top: "20px", right: "20px", background: "rgba(255,255,255,0.15)", border: "none", borderRadius: "50%", width: "40px", height: "40px", cursor: "pointer", color: "white", fontSize: "1.25rem", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      ✕
+                    </button>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={lightboxSrc}
+                      alt="Enlarged bread photo"
+                      style={{ maxWidth: "100%", maxHeight: "90vh", objectFit: "contain", borderRadius: "8px" }}
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </div>
                 )}

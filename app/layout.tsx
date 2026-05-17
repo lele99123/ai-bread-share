@@ -22,28 +22,38 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "AI Bread Share",
   description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
-  keywords: ["bread recipes", "AI baking", " sourdough", "homemade bread", "bread machine recipes"],
+  keywords: ["bread recipes", "AI baking", "sourdough", "homemade bread", "bread machine recipes"],
   authors: [{ name: "AI Bread Share" }],
+  metadataBase: new URL("https://aibreadshare.com"),
   alternates: {
-    canonical: "https://ai-bread-share.vercel.app",
+    canonical: "/",
     languages: {
-      "en": "https://ai-bread-share.vercel.app",
-      "zh": "https://ai-bread-share.vercel.app?lang=zh",
+      "en": "https://aibreadshare.com",
+      "zh": "https://aibreadshare.com?lang=zh",
     },
   },
   openGraph: {
     title: "AI Bread Share",
     description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
-    url: "https://ai-bread-share.vercel.app",
+    url: "https://aibreadshare.com",
     siteName: "AI Bread Share",
     locale: "en_US",
     alternateLocale: "zh_CN",
     type: "website",
+    images: [
+      {
+        url: "https://aibreadshare.com/_next/image?url=https%3A%2F%2Fdjcpleqluujwwdiywcgh.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Foutcome-photos%2F1777911666236-0.9216136040152082.jpg&w=1080&q=75",
+        width: 1080,
+        height: 1080,
+        alt: "AI Bread Share — Community Recipes",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "AI Bread Share",
     description: "Share AI-generated bread recipes — chat history, outcomes, and honest reviews.",
+    images: ["https://aibreadshare.com/_next/image?url=https%3A%2F%2Fdjcpleqluujwwdiywcgh.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Foutcome-photos%2F1777911666236-0.9216136040152082.jpg&w=1080&q=75"],
   },
   robots: {
     index: true,
@@ -89,8 +99,17 @@ export default function RootLayout({
             </main>
 
             <footer className="footer">
-              <div className="container">
-                <p>AI Bread Share &mdash; Where AI meets the perfect crumb</p>
+              <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                  <p style={{ fontFamily: "var(--font-playfair), serif", fontSize: "0.9375rem", marginBottom: "4px" }}>AI Bread Share</p>
+                  <p style={{ fontSize: "0.8125rem", color: "var(--text-faint)" }}>Where AI meets the perfect crumb</p>
+                </div>
+                <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+                  <a href="/" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", textDecoration: "none" }}>Home</a>
+                  <a href="/submit" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", textDecoration: "none" }}>Submit</a>
+                  <a href="/benchmark" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", textDecoration: "none" }}>Benchmark</a>
+                  <a href="https://github.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", textDecoration: "none" }}>GitHub</a>
+                </div>
               </div>
             </footer>
           </AuthProvider>

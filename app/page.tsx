@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -37,6 +37,11 @@ function getLocalizedField<T>(item: T, locale: "en" | "zh", fieldEn: keyof T, fi
   const en = item[fieldEn] as string | null;
   if (en) return en;
   return (item[fieldFallback] as string) || "";
+}
+
+function formatDate(iso: string, locale: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
@@ -91,7 +96,17 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
       {/* Content */}
       <div style={{ padding: '20px' }}>
         {displayBranch?.bread_type && (
-          <p className="section-label" style={{ marginBottom: '6px' }}>{displayBranch.bread_type}</p>
+          <span style={{
+            display: 'inline-block',
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: 'var(--text-faint)',
+            marginBottom: '6px',
+          }}>
+            {displayBranch.bread_type}
+          </span>
         )}
         <h3 style={{
           fontFamily: "'Playfair Display', serif",
@@ -105,6 +120,9 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
         </h3>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginBottom: '10px' }}>
           by {recipe.author_name}
+          {recipe.created_at && (
+            <span style={{ marginLeft: '6px' }}>· {formatDate(recipe.created_at, locale)}</span>
+          )}
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {displayBranch?.review_count !== undefined && displayBranch.review_count > 0 ? (
@@ -133,16 +151,30 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(false);
   const [selectedModel, setSelectedModel] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [offset, setOffset] = useState(0);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search input → trigger search query
+  useEffect(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 350);
+    return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
+  }, [searchInput]);
+
+  // Reset on filter change
+  useEffect(() => {
+    setOffset(0);
+    setLoading(true);
+    setRecipes([]);
+  }, [selectedModel, selectedType, searchQuery]);
 
   function fetchRecipes(resetOffset = true) {
     const newOffset = resetOffset ? 0 : offset;
-    if (resetOffset) {
-      setOffset(0);
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
+    setLoading(true);
 
     let query = supabase
       .from("recipes")
@@ -158,6 +190,10 @@ export default function Home() {
 
     if (selectedModel !== "All") {
       query = query.ilike("ai_model", `%${selectedModel}%`);
+    }
+
+    if (searchQuery.trim().length > 1) {
+      query = query.or(`title.ilike.%${searchQuery}%,title_en.ilike.%${searchQuery}%,title_cn.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,description_en.ilike.%${searchQuery}%,description_cn.ilike.%${searchQuery}%`);
     }
 
     query.then(({ data, error, count }) => {
@@ -191,7 +227,7 @@ export default function Home() {
   useEffect(() => {
     fetchRecipes(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModel, selectedType]);
+  }, [selectedModel, selectedType, searchQuery]);
 
   function loadMore() {
     const newOffset = offset + PAGE_SIZE;
@@ -214,6 +250,45 @@ export default function Home() {
         <p style={{ fontSize: '1.0625rem', color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: '480px' }}>
           {t("home.description")}
         </p>
+      </div>
+
+      {/* ── Search ── */}
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ position: 'relative', maxWidth: '480px' }}>
+          <svg
+            width="16" height="16" viewBox="0 0 16 16" fill="none"
+            style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' }}
+          >
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <input
+            type="search"
+            className="input"
+            placeholder={t("home.searchPlaceholder")}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            style={{ paddingLeft: '40px', fontSize: '0.9375rem' }}
+          />
+          {searchInput && (
+            <button
+              onClick={() => { setSearchInput(""); setSearchQuery(""); }}
+              style={{
+                position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)',
+                padding: '4px', fontSize: '0.875rem',
+              }}
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p style={{ marginTop: '8px', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+            {t("home.searchResults", { query: searchQuery })}
+          </p>
+        )}
       </div>
 
       {/* ── Filters ── */}

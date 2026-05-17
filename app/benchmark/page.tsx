@@ -70,6 +70,51 @@ export default function BenchmarkPage() {
       });
   }, []);
 
+  const MODEL_COLORS: Record<string, string> = {
+    gemini: "#818cf8",
+    chatgpt: "#34d399",
+    claude: "#f59e0b",
+    deepseek: "#f87171",
+    other: "#94a3b8",
+  };
+
+  function BarChart({ data }: { data: Record<string, {
+    recipes: number;
+    reviews: number;
+    avgTaste: number;
+    avgAccuracy: number;
+    pctGoodTaste: number;
+    pctGoodAccuracy: number;
+    branches: BranchWithReview[];
+  }> }) {
+    const entries = Object.entries(data).sort((a, b) => b[1].recipes - a[1].recipes);
+    const maxRecipes = Math.max(...entries.map(([, s]) => s.recipes));
+    return (
+      <div style={{ marginBottom: "40px" }}>
+        <h2 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.125rem", fontWeight: 600, marginBottom: "20px", paddingBottom: "10px", borderBottom: "1px solid var(--border)" }}>
+          Recipes per Model
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {entries.map(([model, stats]) => {
+            const pct = maxRecipes > 0 ? (stats.recipes / maxRecipes) * 100 : 0;
+            const color = MODEL_COLORS[model.toLowerCase()] || MODEL_COLORS.other;
+            return (
+              <div key={model}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "0.8125rem", fontWeight: 500 }}>{model}</span>
+                  <span style={{ fontSize: "0.8125rem", color: "var(--text-faint)" }}>{stats.recipes} recipes</span>
+                </div>
+                <div style={{ height: "8px", background: "var(--bg-muted)", borderRadius: "4px", overflow: "hidden" }}>
+                  <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: "4px", transition: "width 0.5s ease" }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   const totalModels = Object.keys(data).length;
   const totalReviews = Object.values(data).reduce((s, d) => s + d.reviews, 0);
 
@@ -93,6 +138,8 @@ export default function BenchmarkPage() {
           </div>
         ) : (
           <>
+            {!loading && <BarChart data={data} />}
+
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px", marginBottom: "48px" }}>
               {Object.entries(data).map(([model, stats]) => (
                 <div key={model} className="card" style={{ padding: "20px" }}>

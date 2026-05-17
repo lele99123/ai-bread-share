@@ -20,7 +20,9 @@
     "firstToShare": "成为第一个分享 AI 面包对话的人。",
     "shareBtn": "分享食谱",
     "noReviews": "暂无评价",
-    "variants": "种变体"
+    "variants": "种变体",
+    "searchPlaceholder": "按名称或描述搜索食谱...",
+    "searchResults": "显示 \"{query}\" 的结果"
   },
   "submit": {
     "label": "分享给社区",

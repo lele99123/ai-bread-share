@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language";
@@ -80,6 +80,10 @@ export default function SubmitPage() {
   const [step, setStep] = useState<Step>("input");
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ chat_history: "", author_name: session?.user?.user_metadata?.full_name || "" });
+  const [chatLength, setChatLength] = useState(0);
+
+  // Sync character count when chat_history changes
+  useEffect(() => { setChatLength(form.chat_history.length); }, [form.chat_history]);
   const [recipes, setRecipes] = useState<EditableRecipe[]>([]);
 
   async function handleExtract() {
@@ -317,6 +321,36 @@ export default function SubmitPage() {
                 onChange={(e) => setForm({ ...form, chat_history: e.target.value })}
                 placeholder={t("submit.chatPlaceholder")}
               />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "6px" }}>
+                <span style={{ fontSize: "0.75rem", color: chatLength < 50 ? "var(--text-faint)" : "var(--accent)", transition: "color 0.2s" }}>
+                  {chatLength} characters {chatLength < 50 ? "(min 50)" : "✓"}
+                </span>
+              </div>
+
+              {/* Example conversation */}
+              <details style={{ marginTop: "16px", borderRadius: "8px", border: "1px solid var(--border)", overflow: "hidden" }}>
+                <summary style={{ padding: "8px 14px", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-faint)", cursor: "pointer", background: "var(--bg-muted)", userSelect: "none" }}>
+                  Example conversation format (click to expand)
+                </summary>
+                <div style={{ padding: "12px 14px", fontSize: "0.78rem", fontFamily: "'SF Mono', 'Fira Code', monospace", color: "var(--text-muted)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+{`User: Can you give me a sourdough bread recipe?
+
+Assistant: Here's a simple sourdough recipe:
+
+**Ingredients:**
+- 500g bread flour
+- 350ml water
+- 100g active sourdough starter
+- 10g salt
+
+**Steps:**
+1. Mix flour and water, rest 30 min
+2. Add starter and salt, mix well
+3. Bulk ferment 4-6 hours
+4. Shape and proof 2 hours
+5. Bake at 250°C for 20 min with steam...`}
+                </div>
+              </details>
             </div>
           </div>
 
