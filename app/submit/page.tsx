@@ -73,6 +73,10 @@ interface EditableRecipe {
 
 type Step = "input" | "extracting" | "editing" | "submitting";
 
+function breadTypeKey(type: string): string {
+  return type.toLowerCase();
+}
+
 export default function SubmitPage() {
   const { t, locale } = useLanguage();
   const session = useAuth();
@@ -181,7 +185,7 @@ export default function SubmitPage() {
     if (session?.user?.id) {
       const { data: stats } = await supabase.rpc("check_upload_limit", { user_uuid: session.user.id });
       if (!stats) {
-        setError("Monthly limit reached (10 recipes/month). Upgrade for more.");
+        setError(t("submit.monthlyLimit"));
         setStep("editing");
         return;
       }
@@ -265,13 +269,13 @@ export default function SubmitPage() {
         <div className="container" style={{ paddingTop: "80px", paddingBottom: "80px", textAlign: "center" }}>
           <div style={{ maxWidth: "480px", margin: "0 auto" }}>
             <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "2rem", marginBottom: "16px" }}>
-              Sign in to share a recipe
+              {t("submit.signInTitle")}
             </h1>
             <p style={{ color: "var(--text-muted)", marginBottom: "32px" }}>
-              You need to be signed in to submit recipes.
+              {t("submit.signInDescription")}
             </p>
             <button className="btn-primary" onClick={() => document.dispatchEvent(new CustomEvent("open-auth-modal"))}>
-              Sign in
+              {t("nav.signIn")}
             </button>
           </div>
         </div>
@@ -287,7 +291,7 @@ export default function SubmitPage() {
               {t("submit.title")}
             </h1>
             <p style={{ color: "var(--text-muted)", lineHeight: 1.7 }}>
-              {t("submit.description")}
+              {t("submit.intro")}
             </p>
           </div>
 
@@ -323,14 +327,14 @@ export default function SubmitPage() {
               />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "6px" }}>
                 <span style={{ fontSize: "0.75rem", color: chatLength < 50 ? "var(--text-faint)" : "var(--accent)", transition: "color 0.2s" }}>
-                  {chatLength} characters {chatLength < 50 ? "(min 50)" : "✓"}
+                  {t("submit.characterCount", { count: chatLength })} {chatLength < 50 ? t("submit.minimumCharacters", { count: 50 }) : "✓"}
                 </span>
               </div>
 
               {/* Example conversation */}
               <details style={{ marginTop: "16px", borderRadius: "8px", border: "1px solid var(--border)", overflow: "hidden" }}>
                 <summary style={{ padding: "8px 14px", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-faint)", cursor: "pointer", background: "var(--bg-muted)", userSelect: "none" }}>
-                  Example conversation format (click to expand)
+                  {t("submit.exampleSummary")}
                 </summary>
                 <div style={{ padding: "12px 14px", fontSize: "0.78rem", fontFamily: "'SF Mono', 'Fira Code', monospace", color: "var(--text-muted)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
 {`User: Can you give me a sourdough bread recipe?
@@ -389,7 +393,7 @@ Assistant: Here's a simple sourdough recipe:
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
           <div style={{ marginBottom: "28px" }}>
             <p className="section-label" style={{ marginBottom: "8px" }}>
-              {recipes.length} {recipeWord}, {totalBranches} {branchWord} {t("submit.found_other")}
+              {recipes.length} {recipeWord}, {totalBranches} {branchWord}
             </p>
             <h1 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "8px" }}>
               {t("submit.reviewTitle")}
@@ -452,7 +456,7 @@ Assistant: Here's a simple sourdough recipe:
                         <div style={{ marginBottom: "16px" }}>
                           <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.type")}</label>
                           <select className="input" value={recipe.bread_type} onChange={(e) => updateRecipeField(recipe.id, "bread_type", e.target.value)}>
-                            {BREAD_TYPES.map((t_) => <option key={t_} value={t_}>{t_}</option>)}
+                            {BREAD_TYPES.map((t_) => <option key={t_} value={t_}>{t(`breadTypes.${breadTypeKey(t_)}`)}</option>)}
                           </select>
                         </div>
 
@@ -468,7 +472,7 @@ Assistant: Here's a simple sourdough recipe:
                         </div>
 
                         <div style={{ marginBottom: "16px" }}>
-                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Tags</label>
+                          <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>{t("submit.tags")}</label>
                           <input
                             type="text"
                             className="input"
@@ -536,7 +540,7 @@ Assistant: Here's a simple sourdough recipe:
                                       {branch.photoPreview ? (
                                         <div style={{ borderRadius: "8px", overflow: "hidden", position: "relative" }}>
                                           <img src={branch.photoPreview} alt="Preview" style={{ width: "100%", maxHeight: "160px", objectFit: "cover" }} />
-                                          <div style={{ position: "absolute", bottom: "6px", right: "6px", background: "rgba(0,0,0,0.55)", color: "white", fontSize: "0.65rem", padding: "2px 7px", borderRadius: "4px" }}>Change</div>
+                                          <div style={{ position: "absolute", bottom: "6px", right: "6px", background: "rgba(0,0,0,0.55)", color: "white", fontSize: "0.65rem", padding: "2px 7px", borderRadius: "4px" }}>{t("photo.replace")}</div>
                                         </div>
                                       ) : (
                                         <div className="upload-zone" style={{ padding: "10px" }}>

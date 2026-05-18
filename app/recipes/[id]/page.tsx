@@ -150,14 +150,14 @@ function ReviewSection({ branchId, recipeId, recipeAuthorId }: { branchId: strin
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", padding: "12px 16px", background: "var(--bg-muted)", borderRadius: "8px" }}>
         <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>
-          {reviews.length === 0 ? t("recipe.noReviews") : `${reviews.length} review${reviews.length !== 1 ? "s" : ""}`}
+          {reviews.length === 0 ? t("recipe.noReviews") : t(reviews.length === 1 ? "recipe.reviewCountSimple_one" : "recipe.reviewCountSimple_other", { count: reviews.length })}
         </span>
       </div>
 
       {!session ? (
         <div style={{ padding: "16px", background: "var(--bg-muted)", borderRadius: "8px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.875rem" }}>
           <button className="btn-ghost" onClick={() => document.dispatchEvent(new CustomEvent("open-auth-modal"))}>
-            Sign in to leave a review
+            {t("recipe.signInToReview")}
           </button>
         </div>
       ) : !submitted ? (

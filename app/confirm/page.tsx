@@ -3,9 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/lib/language";
 
 export default function ConfirmPage() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Handle the OAuth or OTP callback
@@ -26,8 +28,8 @@ export default function ConfirmPage() {
             <path d="M5 12l5 5 9-9" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h2 style={{ fontFamily: "var(--font-playfair), serif", marginBottom: "8px" }}>Signing you in...</h2>
-        <p style={{ color: "var(--text-muted)" }}>Please wait while we confirm your account.</p>
+        <h2 style={{ fontFamily: "var(--font-playfair), serif", marginBottom: "8px" }}>{t("auth.signingIn")}</h2>
+        <p style={{ color: "var(--text-muted)" }}>{t("auth.confirming")}</p>
       </div>
     </div>
   );

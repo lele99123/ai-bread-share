@@ -7,7 +7,36 @@
     "signOut": "Sign out",
     "signIn": "Sign in",
     "signedInAs": "Signed in as",
-    "benchmark": "Benchmark"
+    "benchmark": "Model Benchmark",
+    "menu": "Menu"
+  },
+  "common": {
+    "all": "All",
+    "loading": "Loading...",
+    "loadMore": "Load more",
+    "clearSearch": "Clear search"
+  },
+  "breadTypes": {
+    "sweet": "Sweet",
+    "savory": "Savory",
+    "sourdough": "Sourdough",
+    "other": "Other"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "checkEmail": "Check your email",
+    "sentLink": "We sent a link to",
+    "clickToCreate": "Click the link in the email to create your account.",
+    "clickToSignIn": "Click the link in the email to sign in.",
+    "continueGoogle": "Continue with Google",
+    "continueGithub": "Continue with GitHub",
+    "or": "or",
+    "createAccount": "Create Account",
+    "signInEmail": "Sign in with Email",
+    "terms": "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    "signingIn": "Signing you in...",
+    "confirming": "Please wait while we confirm your account."
   },
   "home": {
     "label": "Community Recipes",
@@ -24,9 +53,29 @@
     "searchPlaceholder": "Search recipes by name or description...",
     "searchResults": "Showing results for \"{query}\""
   },
+  "benchmark": {
+    "description": "How each AI model performs at generating bread recipes, based on real user reviews.",
+    "recipesPerModel": "Recipes per Model",
+    "recipeCount_one": "{count} recipe",
+    "recipeCount_other": "{count} recipes",
+    "noReviews": "No reviews yet. Be the first to review a recipe!",
+    "recipes": "recipes",
+    "reviews": "reviews",
+    "avgTaste": "avg taste",
+    "avgAccuracy": "avg accuracy",
+    "goodRatings": "{taste}% rated taste >= 4 stars · {accuracy}% rated accuracy >= 4 stars",
+    "reviewDetails": "Review Details",
+    "keyObservations": "Key Observations",
+    "mostRecipesSuffix": " has the most recipes in the database ({count} recipes).",
+    "highestAccuracySuffix": " scores highest on accuracy (★{rating} avg).",
+    "smallDataset": "Dataset is small: {reviews} total reviews across {models} models. More reviews are needed for statistically meaningful conclusions."
+  },
   "submit": {
     "label": "Share with the community",
     "title": "Submit Recipes",
+    "intro": "Paste an AI baking conversation and review the recipes we extract before publishing.",
+    "signInTitle": "Sign in to share a recipe",
+    "signInDescription": "You need to be signed in to submit recipes.",
     "description": "Description",
     "yourName": "Your Name",
     "namePlaceholder": "Anonymous",
@@ -45,6 +94,7 @@
     "model": "AI Model",
     "type": "Type",
     "descriptionPlaceholder": "Brief description of this bread",
+    "tags": "Tags",
     "branchesTitle": "Branches — iterations of this recipe",
     "branchTitle": "Branch Title",
     "branchNotes": "Notes",
@@ -52,6 +102,9 @@
     "branchRecipe": "Recipe",
     "branchPhoto": "Photo",
     "addPhoto": "+ Add photo (optional)",
+    "characterCount": "{count} characters",
+    "minimumCharacters": "(min {count})",
+    "exampleSummary": "Example conversation format (click to expand)",
     "startOver": "← Start Over",
     "selectAtLeast": "Select at least one recipe",
     "publish_one": "Publish {count} Recipe",
@@ -61,7 +114,8 @@
     "extractingHint": "Scanning the conversation for distinct breads.",
     "chatTooShort": "Chat history is too short.",
     "failed": "Failed to publish. Please try again.",
-    "selectOne": "Please select at least one recipe to publish."
+    "selectOne": "Please select at least one recipe to publish.",
+    "monthlyLimit": "Monthly limit reached (10 recipes/month). Upgrade for more."
   },
   "recipe": {
     "back": "← All recipes",
@@ -76,7 +130,10 @@
     "reviewCount": "{count} review · ★ {avg}",
     "reviewCount_one": "{count} review · ★ {avg}",
     "reviewCount_other": "{count} reviews · ★ {avg}",
+    "reviewCountSimple_one": "{count} review",
+    "reviewCountSimple_other": "{count} reviews",
     "leaveReview": "Leave a review",
+    "signInToReview": "Sign in to leave a review",
     "yourRating": "Your rating",
     "yourNameOptional": "Your name (optional)",
     "howDidItTurnOut": "How did it turn out?",
@@ -95,7 +152,7 @@
     "viewInChat": "View in chat"
   },
   "footer": {
-    "tagline": "AI Bread Share — Where AI meets the perfect crumb"
+    "tagline": "Where AI meets the perfect crumb"
   },
   "myRecipes": {
     "title": "My Recipes",

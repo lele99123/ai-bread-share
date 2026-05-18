@@ -88,6 +88,10 @@ h1, h2, h3, h4 {
     padding: 4px 6px !important;
   }
 
+  .nav-benchmark-btn {
+    display: none !important;
+  }
+
   .nav-browse-btn span,
   .nav-share-btn span {
     display: none;
@@ -114,12 +118,6 @@ h1, h2, h3, h4 {
   /* Mobile menu button — visible on mobile, hidden on desktop */
   .nav-menu-btn {
     display: flex !important;
-  }
-
-  @media (min-width: 641px) {
-    .nav-menu-btn {
-      display: none !important;
-    }
   }
 
   /* Submit page: recipe fields stacked on mobile */
@@ -204,7 +202,7 @@ h1, h2, h3, h4 {
 .ai-badge.chatgpt::before  { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/openai.svg") center/contain no-repeat; }
 .ai-badge.claude::before   { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/claude-color.svg") center/contain no-repeat; }
 .ai-badge.deepseek::before { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/deepseek-color.svg") center/contain no-repeat; }
-.ai-badge.other::before    { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/other.svg") center/contain no-repeat; }
+.ai-badge.other::before    { content: ''; display: inline-block; width: 12px; height: 12px; background: url("/file.svg") center/contain no-repeat; }
 
 /* ─── Buttons ───────────────────────────────────────────────── */
 .btn-primary {
@@ -341,6 +339,7 @@ select.input {
   letter-spacing: -0.02em;
 }
 .nav-logo span { color: var(--accent); }
+.nav-menu-btn { display: none !important; }
 
 /* ─── Footer ────────────────────────────────────────────────── */
 .footer {
@@ -351,6 +350,24 @@ select.input {
   font-size: 0.875rem;
   margin-top: auto;
 }
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.footer-link {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.footer-link:hover { color: var(--accent); }
 
 /* ─── Prose (markdown rendering) ─────────────────────────────── */
 .prose-bread {

@@ -39,45 +39,46 @@ export function NavMenu() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(!open)}
-        className="nav-menu-btn btn-ghost"
-        style={{
-          padding: "4px 8px",
-          fontSize: "0.7rem",
-        }}
-        aria-label="Menu"
-      >
-        {open ? "✕" : "☰"}
-      </button>
+      <div ref={ref} style={{ position: "relative" }}>
+        <button
+          onClick={() => setOpen(!open)}
+          className="nav-menu-btn btn-ghost"
+          style={{
+            padding: "4px 8px",
+            fontSize: "0.7rem",
+          }}
+          aria-label={t("nav.menu")}
+          aria-expanded={open}
+        >
+          {open ? "✕" : "☰"}
+        </button>
 
-      {open && (
-        <>
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.3)",
-              zIndex: 90,
-            }}
-            onClick={() => setOpen(false)}
-          />
-          <div
-            ref={ref}
-            style={{
-              position: "absolute",
-              top: "100%",
-              right: "0",
-              marginTop: "4px",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "10px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-              zIndex: 91,
-              minWidth: "180px",
-              overflow: "hidden",
-            }}
-          >
+        {open && (
+          <>
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.3)",
+                zIndex: 90,
+              }}
+              onClick={() => setOpen(false)}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                right: "0",
+                marginTop: "4px",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border)",
+                borderRadius: "10px",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                zIndex: 91,
+                minWidth: "180px",
+                overflow: "hidden",
+              }}
+            >
             {session ? (
               <>
                 <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
@@ -165,6 +166,24 @@ export function NavMenu() {
               </>
             ) : (
               <div style={{ padding: "6px" }}>
+                <Link
+                  href="/benchmark"
+                  onClick={() => setOpen(false)}
+                  style={{
+                    display: "block",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "0.875rem",
+                    color: "var(--text)",
+                    fontFamily: "var(--font-dm-sans), sans-serif",
+                    textDecoration: "none",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-muted)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                >
+                  {t("nav.benchmark")}
+                </Link>
                 <button
                   onClick={() => { setOpen(false); setAuthOpen(true); }}
                   style={{
@@ -187,9 +206,10 @@ export function NavMenu() {
                 </button>
               </div>
             )}
-          </div>
-        </>
-      )}
+            </div>
+          </>
+        )}
+      </div>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </>

@@ -7,7 +7,36 @@
     "signOut": "退出登录",
     "signIn": "登录",
     "signedInAs": "登录为",
-    "benchmark": "Benchmark"
+    "benchmark": "模型评测",
+    "menu": "菜单"
+  },
+  "common": {
+    "all": "全部",
+    "loading": "加载中...",
+    "loadMore": "加载更多",
+    "clearSearch": "清空搜索"
+  },
+  "breadTypes": {
+    "sweet": "甜味",
+    "savory": "咸味",
+    "sourdough": "酸种",
+    "other": "其他"
+  },
+  "auth": {
+    "signIn": "登录",
+    "signUp": "注册",
+    "checkEmail": "查看你的邮箱",
+    "sentLink": "我们已发送登录链接到",
+    "clickToCreate": "点击邮件中的链接创建账号。",
+    "clickToSignIn": "点击邮件中的链接登录。",
+    "continueGoogle": "使用 Google 继续",
+    "continueGithub": "使用 GitHub 继续",
+    "or": "或",
+    "createAccount": "创建账号",
+    "signInEmail": "使用邮箱登录",
+    "terms": "继续即表示你同意我们的服务条款和隐私政策。",
+    "signingIn": "正在登录...",
+    "confirming": "请稍等，我们正在确认你的账号。"
   },
   "home": {
     "label": "社区食谱",
@@ -24,9 +53,29 @@
     "searchPlaceholder": "按名称或描述搜索食谱...",
     "searchResults": "显示 \"{query}\" 的结果"
   },
+  "benchmark": {
+    "description": "基于真实用户评价，比较各个 AI 模型生成面包食谱的表现。",
+    "recipesPerModel": "各模型食谱数量",
+    "recipeCount_one": "{count} 个食谱",
+    "recipeCount_other": "{count} 个食谱",
+    "noReviews": "还没有评价。成为第一个评价食谱的人！",
+    "recipes": "食谱",
+    "reviews": "评价",
+    "avgTaste": "平均味道",
+    "avgAccuracy": "平均准确度",
+    "goodRatings": "{taste}% 的味道评分 >= 4 星 · {accuracy}% 的准确度评分 >= 4 星",
+    "reviewDetails": "评价详情",
+    "keyObservations": "主要观察",
+    "mostRecipesSuffix": " 在数据库中的食谱最多（{count} 个）。",
+    "highestAccuracySuffix": " 的准确度最高（平均 ★{rating}）。",
+    "smallDataset": "当前数据量较小：共 {reviews} 条评价，覆盖 {models} 个模型。需要更多评价才能得出更可靠的结论。"
+  },
   "submit": {
     "label": "分享给社区",
     "title": "提交食谱",
+    "intro": "粘贴一段 AI 烘焙对话，发布前先审核我们提取出的食谱。",
+    "signInTitle": "登录后分享食谱",
+    "signInDescription": "你需要先登录才能提交食谱。",
     "description": "描述",
     "yourName": "你的名字",
     "namePlaceholder": "匿名",
@@ -34,8 +83,8 @@
     "conversationHint": "粘贴完整对话。我们会提取其中讨论的每一份独特食谱。",
     "chatPlaceholder": "# 你问\n\n帮我整理一个更好的面包配方...\n\n---\n\n# gemini 回答\n\n帮你把这两款吐司的配方都做了升级...\n\n---\n\n# 你问\n\n如果我想加入香蕉呢？...\n\n# gemini 回答\n\n加入香蕉意味着配方需要进行大手术...",
     "extractBtn": "查找所有食谱",
-    "found_one": "个食谱发现",
-    "found_other": "个食谱发现",
+    "found_one": "个食谱",
+    "found_other": "个食谱",
     "branches_one": "个分支",
     "branches_other": "个分支",
     "reviewTitle": "审核并选择",
@@ -45,6 +94,7 @@
     "model": "AI 模型",
     "type": "类型",
     "descriptionPlaceholder": "简要描述这个面包",
+    "tags": "标签",
     "branchesTitle": "分支 — 这个食谱的不同版本",
     "branchTitle": "分支标题",
     "branchNotes": "备注",
@@ -52,6 +102,9 @@
     "branchRecipe": "食谱",
     "branchPhoto": "照片",
     "addPhoto": "+ 添加照片（可选）",
+    "characterCount": "{count} 个字符",
+    "minimumCharacters": "（至少 {count} 个）",
+    "exampleSummary": "示例对话格式（点击展开）",
     "startOver": "← 重新开始",
     "selectAtLeast": "至少选择一个食谱",
     "publish_one": "发布 {count} 个食谱",
@@ -61,7 +114,8 @@
     "extractingHint": "扫描对话中的不同面包。",
     "chatTooShort": "对话内容太短。",
     "failed": "发布失败，请重试。",
-    "selectOne": "请至少选择一道食谱发布。"
+    "selectOne": "请至少选择一道食谱发布。",
+    "monthlyLimit": "已达到每月限制（每月 10 个食谱）。升级后可发布更多。"
   },
   "recipe": {
     "back": "← 所有食谱",
@@ -76,7 +130,10 @@
     "reviewCount": "{count} 条评价 · ★ {avg}",
     "reviewCount_one": "{count} 条评价 · ★ {avg}",
     "reviewCount_other": "{count} 条评价 · ★ {avg}",
+    "reviewCountSimple_one": "{count} 条评价",
+    "reviewCountSimple_other": "{count} 条评价",
     "leaveReview": "留下评价",
+    "signInToReview": "登录后留下评价",
     "yourRating": "你的评分",
     "yourNameOptional": "你的名字（可选）",
     "howDidItTurnOut": "做得怎么样？",
@@ -95,7 +152,7 @@
     "viewInChat": "在对话中查看"
   },
   "footer": {
-    "tagline": "AI Bread Share — 当 AI 遇见完美的面包屑"
+    "tagline": "当 AI 遇见完美的面包屑"
   },
   "myRecipes": {
     "title": "我的食谱",
@@ -116,7 +173,7 @@
     "recipe": "食谱"
   },
   "photo": {
-    "replace": "Replace photo",
-    "uploading": "Uploading..."
+    "replace": "更换照片",
+    "uploading": "上传中..."
   }
 }

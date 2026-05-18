@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -9,6 +9,14 @@ import { useLanguage } from "@/lib/language";
 
 const AI_MODELS = ["All", "Gemini", "ChatGPT", "Claude", "DeepSeek", "Other"];
 const BREAD_TYPES = ["All", "Sweet", "Savory", "Sourdough", "Other"];
+
+function getBreadTypeKey(type: string): string {
+  return type.toLowerCase();
+}
+
+function sanitizeSearchQuery(query: string): string {
+  return query.replace(/[%,()]/g, " ").replace(/\s+/g, " ").trim();
+}
 
 function getModelClass(model: string): string {
   const m = model.toLowerCase();
@@ -105,7 +113,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             color: 'var(--text-faint)',
             marginBottom: '6px',
           }}>
-            {displayBranch.bread_type}
+            {t(`breadTypes.${getBreadTypeKey(displayBranch.bread_type)}`)}
           </span>
         )}
         <h3 style={{
@@ -172,15 +180,22 @@ export default function Home() {
     setRecipes([]);
   }, [selectedModel, selectedType, searchQuery]);
 
-  function fetchRecipes(resetOffset = true) {
-    const newOffset = resetOffset ? 0 : offset;
-    setLoading(true);
+  function fetchRecipes(resetOffset = true, requestedOffset = resetOffset ? 0 : offset) {
+    const newOffset = requestedOffset;
+    if (resetOffset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    const safeSearchQuery = sanitizeSearchQuery(searchQuery);
+    const branchRelation = selectedType === "All" ? "recipe_branches" : "recipe_branches!inner";
 
     let query = supabase
       .from("recipes")
       .select(`
         *,
-        recipe_branches (
+        ${branchRelation} (
           *,
           reviews (rating)
         )
@@ -192,8 +207,12 @@ export default function Home() {
       query = query.ilike("ai_model", `%${selectedModel}%`);
     }
 
-    if (searchQuery.trim().length > 1) {
-      query = query.or(`title.ilike.%${searchQuery}%,title_en.ilike.%${searchQuery}%,title_cn.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,description_en.ilike.%${searchQuery}%,description_cn.ilike.%${searchQuery}%`);
+    if (selectedType !== "All") {
+      query = query.eq("recipe_branches.bread_type", selectedType);
+    }
+
+    if (safeSearchQuery.length > 1) {
+      query = query.or(`title.ilike.%${safeSearchQuery}%,title_en.ilike.%${safeSearchQuery}%,title_cn.ilike.%${safeSearchQuery}%,description.ilike.%${safeSearchQuery}%,description_en.ilike.%${safeSearchQuery}%,description_cn.ilike.%${safeSearchQuery}%`);
     }
 
     query.then(({ data, error, count }) => {
@@ -208,16 +227,13 @@ export default function Home() {
           return { ...r, branches: enriched };
         });
 
-        const clientFiltered = selectedType === "All"
-          ? mapped
-          : mapped.filter((r) => r.branches?.[0]?.bread_type === selectedType);
-
         if (resetOffset) {
-          setRecipes(clientFiltered);
+          setRecipes(mapped);
         } else {
-          setRecipes((prev) => [...prev, ...clientFiltered]);
+          setRecipes((prev) => [...prev, ...mapped]);
         }
         setHasMore((count || 0) > newOffset + PAGE_SIZE);
+        setOffset(newOffset);
       }
       setLoading(false);
       setLoadingMore(false);
@@ -231,8 +247,7 @@ export default function Home() {
 
   function loadMore() {
     const newOffset = offset + PAGE_SIZE;
-    setOffset(newOffset);
-    fetchRecipes(false);
+    fetchRecipes(false, newOffset);
   }
 
   const filtered = recipes;
@@ -278,7 +293,7 @@ export default function Home() {
                 background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)',
                 padding: '4px', fontSize: '0.875rem',
               }}
-              aria-label="Clear search"
+              aria-label={t("common.clearSearch")}
             >
               ✕
             </button>
@@ -318,7 +333,7 @@ export default function Home() {
                     : { background: 'transparent', color: 'var(--text-muted)', borderColor: 'var(--border)' }),
                 }}
               >
-                {m}
+                {m === "All" ? t("common.all") : m}
               </button>
             ))}
           </div>
@@ -344,7 +359,7 @@ export default function Home() {
                     : { background: 'transparent', color: 'var(--text-muted)', borderColor: 'var(--border)' }),
                 }}
               >
-                {t_}
+                {t_ === "All" ? t("common.all") : t(`breadTypes.${getBreadTypeKey(t_)}`)}
               </button>
             ))}
           </div>
@@ -396,7 +411,7 @@ export default function Home() {
             className="btn-ghost"
             style={{ padding: '10px 28px' }}
           >
-            {loadingMore ? 'Loading...' : 'Load more'}
+            {loadingMore ? t("common.loading") : t("common.loadMore")}
           </button>
         </div>
       )}

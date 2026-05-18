@@ -11,6 +11,12 @@ const AI_META: Record<string, { color: string }> = {
   Unknown:  { color: "#78716C" },
 };
 
+function getModelIcon(name: string): string {
+  if (name === "ChatGPT") return "/openai.svg";
+  if (name === "Other" || name === "Unknown") return "/file.svg";
+  return `/${name.toLowerCase()}.svg`;
+}
+
 export function AIModelSelect({
   value,
   onChange,
@@ -19,8 +25,7 @@ export function AIModelSelect({
   onChange: (v: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const meta = AI_META[value] || AI_META.Unknown;
-  const iconPath = `/${value === "ChatGPT" ? "openai" : value === "Other" ? "other" : value.toLowerCase()}.svg`;
+  const iconPath = getModelIcon(value);
 
   return (
     <div style={{ position: "relative" }}>
@@ -74,7 +79,7 @@ export function AIModelSelect({
                 background: name === value ? "var(--bg-muted)" : "transparent",
               }}
             >
-              <img src={`/${name === "ChatGPT" ? "openai" : name.toLowerCase()}.svg`} alt={name} style={{ width: "16px", height: "16px", flexShrink: 0 }} />
+              <img src={getModelIcon(name)} alt={name} style={{ width: "16px", height: "16px", flexShrink: 0 }} />
               <span style={{ fontSize: "0.875rem", color: "var(--text)" }}>{name}</span>
             </div>
           ))}
