@@ -111,6 +111,10 @@ h1, h2, h3, h4 {
   }
 
   /* Nav: hide email on mobile */
+  .auth-desktop {
+    display: none !important;
+  }
+
   .auth-email {
     display: none !important;
   }
@@ -339,6 +343,7 @@ select.input {
   letter-spacing: -0.02em;
 }
 .nav-logo span { color: var(--accent); }
+.auth-desktop { display: block; }
 .nav-menu-btn { display: none !important; }
 
 /* ─── Footer ────────────────────────────────────────────────── */

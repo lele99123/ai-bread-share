@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-provider";
+import { useLanguage } from "@/lib/language";
 import { AuthModal } from "./AuthModal";
 import { supabase } from "@/lib/supabase";
 
 export function AuthButton() {
   const session = useAuth();
+  const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export function AuthButton() {
           className="btn-ghost auth-signout"
           style={{ fontSize: "0.8125rem", padding: "4px 10px" }}
         >
-          Sign out
+          {t("nav.signOut")}
         </button>
       </div>
     );
@@ -39,7 +41,7 @@ export function AuthButton() {
         className="btn-ghost"
         style={{ fontSize: "0.8125rem", padding: "4px 6px" }}
       >
-        Sign in
+        {t("nav.signIn")}
       </button>
       <AuthModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </>

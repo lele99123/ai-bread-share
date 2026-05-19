@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { AuthButton } from "@/components/AuthButton";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { NavMenu } from "@/components/NavMenu";
 import { useLanguage } from "@/lib/language";
@@ -28,6 +29,9 @@ export function SiteChrome({ children }: { children: ReactNode }) {
               <span>{t("nav.share")}</span>
             </a>
             <LanguageToggle />
+            <div className="auth-desktop">
+              <AuthButton />
+            </div>
             <NavMenu />
           </div>
         </div>
