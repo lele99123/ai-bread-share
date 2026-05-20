@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/language";
 import { AuthProvider } from "@/lib/auth-provider";
@@ -69,6 +70,8 @@ export const viewport = {
   initialScale: 1,
 };
 
+const GOOGLE_TAG_ID = "G-T2WBLXWY8S";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -77,6 +80,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
       <body className="min-h-screen flex flex-col" style={{ fontFamily: "var(--font-dm-sans), 'DM Sans', system-ui, sans-serif" }}>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-gtag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GOOGLE_TAG_ID}');
+          `}
+        </Script>
         <LanguageProvider>
           <AuthProvider>
             <SiteChrome>{children}</SiteChrome>
