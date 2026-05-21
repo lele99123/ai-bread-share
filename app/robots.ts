@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://ai-bread-share.vercel.app/sitemap.xml",
+    sitemap: "https://aibreadshare.com/sitemap.xml",
   };
 }

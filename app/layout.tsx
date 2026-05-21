@@ -27,10 +27,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://aibreadshare.com"),
   alternates: {
     canonical: "/",
-    languages: {
-      "en": "https://aibreadshare.com",
-      "zh": "https://aibreadshare.com?lang=zh",
-    },
   },
   openGraph: {
     title: "AI Bread Share",
