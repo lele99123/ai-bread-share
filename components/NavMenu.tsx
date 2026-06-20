@@ -14,13 +14,13 @@ export function NavMenu() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: PointerEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("pointerdown", handler, { passive: true });
+    return () => document.removeEventListener("pointerdown", handler);
   }, []);
 
   useEffect(() => {
@@ -65,6 +65,7 @@ export function NavMenu() {
               onClick={() => setOpen(false)}
             />
             <div
+              onPointerDown={(e) => e.stopPropagation()}
               style={{
                 position: "absolute",
                 top: "100%",
